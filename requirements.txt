@@ -1,0 +1,16 @@
+pymupdf
+python-docx
+hazm
+regex
+langchain-text-splitters
+pydantic
+python-dotenv
+structlog
+# Ticket 2/3:
+openai
+tenacity
+neo4j
+# Frontend:
+fastapi
+uvicorn[standard]
+python-multipart

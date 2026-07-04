@@ -1,0 +1,131 @@
+{
+  "description": "Expected ontology facts for sample municipality documents.",
+  "triplets": [
+    {
+      "subject_type": "Contractor",
+      "subject_name": "شرکت راه‌سازان آریا",
+      "relation": "EXECUTOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه بهسازی پل صدر"
+    },
+    {
+      "subject_type": "Project",
+      "subject_name": "پروژه بهسازی پل صدر",
+      "relation": "LOCATED_IN",
+      "object_type": "Location",
+      "object_name": "منطقه ۳ تهران"
+    },
+    {
+      "subject_type": "Project",
+      "subject_name": "پروژه بهسازی پل صدر",
+      "relation": "LOCATED_IN",
+      "object_type": "Location",
+      "object_name": "محله قیطریه"
+    },
+    {
+      "subject_type": "Official",
+      "subject_name": "مهندس ناهید علوی",
+      "relation": "SUPERVISOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه بهسازی پل صدر"
+    },
+    {
+      "subject_type": "Budget",
+      "subject_name": "ردیف بودجه عمرانی ۱۴۰۳-۳-۱۷",
+      "relation": "FINANCES",
+      "object_type": "Project",
+      "object_name": "پروژه بهسازی پل صدر"
+    },
+    {
+      "subject_type": "Contractor",
+      "subject_name": "شرکت عمران‌گستر پایتخت",
+      "relation": "EXECUTOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه تعریض خیابان شریعتی"
+    },
+    {
+      "subject_type": "Project",
+      "subject_name": "پروژه تعریض خیابان شریعتی",
+      "relation": "LOCATED_IN",
+      "object_type": "Location",
+      "object_name": "منطقه ۷ تهران"
+    },
+    {
+      "subject_type": "Official",
+      "subject_name": "مهندس کامران رضایی",
+      "relation": "SUPERVISOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه تعریض خیابان شریعتی"
+    },
+    {
+      "subject_type": "Budget",
+      "subject_name": "ردیف بودجه حمل‌ونقل ۱۴۰۳-۷-۰۹",
+      "relation": "FINANCES",
+      "object_type": "Project",
+      "object_name": "پروژه تعریض خیابان شریعتی"
+    },
+    {
+      "subject_type": "Complaint",
+      "subject_name": "تیکت ۱۳۷-۵۵۸۱",
+      "relation": "COMPLAINS_ABOUT",
+      "object_type": "Project",
+      "object_name": "پروژه بهسازی پل صدر"
+    },
+    {
+      "subject_type": "Complaint",
+      "subject_name": "تیکت ۱۳۷-۵۶۰۲",
+      "relation": "COMPLAINS_ABOUT",
+      "object_type": "Project",
+      "object_name": "پروژه تعریض خیابان شریعتی"
+    },
+    {
+      "subject_type": "Complaint",
+      "subject_name": "تیکت ۱۳۷-۵۶۲۰",
+      "relation": "COMPLAINS_ABOUT",
+      "object_type": "Location",
+      "object_name": "محله پونک"
+    },
+    {
+      "subject_type": "Complaint",
+      "subject_name": "تیکت ۱۳۷-۵۶۴۴",
+      "relation": "COMPLAINS_ABOUT",
+      "object_type": "Project",
+      "object_name": "پروژه بازآفرینی میدان صنعت"
+    },
+    {
+      "subject_type": "Contractor",
+      "subject_name": "شرکت شهرسازان نوین",
+      "relation": "EXECUTOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه بازآفرینی میدان صنعت"
+    },
+    {
+      "subject_type": "Project",
+      "subject_name": "پروژه بازآفرینی میدان صنعت",
+      "relation": "LOCATED_IN",
+      "object_type": "Location",
+      "object_name": "منطقه ۲ تهران"
+    },
+    {
+      "subject_type": "Project",
+      "subject_name": "پروژه بازآفرینی میدان صنعت",
+      "relation": "LOCATED_IN",
+      "object_type": "Location",
+      "object_name": "محله شهرک غرب"
+    },
+    {
+      "subject_type": "Official",
+      "subject_name": "مهندس سارا ملکی",
+      "relation": "SUPERVISOR_OF",
+      "object_type": "Project",
+      "object_name": "پروژه بازآفرینی میدان صنعت"
+    },
+    {
+      "subject_type": "Budget",
+      "subject_name": "ردیف بودجه بازآفرینی ۱۴۰۳-۲-۳۳",
+      "relation": "FINANCES",
+      "object_type": "Project",
+      "object_name": "پروژه بازآفرینی میدان صنعت"
+    }
+  ]
+}

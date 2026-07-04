@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>گراف دانش شهرداری</title>
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#181b24; --border:#2a2f3a; --text:#e6e8ee; --muted:#9aa3b2;
+    --Project:#4f8cff; --Contractor:#f7b955; --Location:#38c172; --Official:#c084fc;
+    --Budget:#f25f5c; --Complaint:#e879a6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Tahoma,Segoe UI,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column}
+  header{padding:12px 18px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  header h1{font-size:18px;margin:0}
+  .up{display:flex;align-items:center;gap:8px;margin-inline-start:auto}
+  .btn{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:14px}
+  .btn:disabled{opacity:.5;cursor:default}
+  #status{font-size:13px;color:var(--muted)}
+  main{flex:1;display:flex;min-height:0}
+  #net{flex:1;min-width:0}
+  aside{width:320px;background:var(--panel);border-inline-start:1px solid var(--border);padding:14px;overflow:auto}
+  aside h2{font-size:14px;margin:0 0 8px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chip{display:flex;align-items:center;gap:6px;font-size:12px;background:#12151d;border:1px solid var(--border);border-radius:20px;padding:3px 10px}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .fact{background:#12151d;border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:8px;font-size:13px;line-height:1.7}
+  .fact .rel{color:#8ab4ff;font-weight:bold}
+  .fact .ev{color:var(--muted);font-size:12px;margin-top:5px;border-top:1px dashed var(--border);padding-top:5px}
+  .hint{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🕸️ گراف دانش شهرداری</h1>
+  <div class="up">
+    <input type="file" id="file" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display:none">
+    <button class="btn" id="pick">افزودن سند</button>
+    <button class="btn" id="refresh" style="background:#374151">تازه‌سازی</button>
+    <span id="status"></span>
+  </div>
+</header>
+<main>
+  <div id="net"></div>
+  <aside>
+    <h2>راهنمای رنگ‌ها</h2>
+    <div class="legend" id="legend"></div>
+    <h2 id="panelTitle">جزئیات</h2>
+    <div id="panel"><p class="hint">روی یک گره کلیک کن تا رابطه‌ها و متن شاهدش را ببینی.</p></div>
+  </aside>
+</main>
+<script>
+const GROUPS = {Project:'پروژه',Contractor:'پیمانکار',Location:'مکان',Official:'مسئول',Budget:'بودجه',Complaint:'شکایت'};
+const COLOR = {Project:'#4f8cff',Contractor:'#f7b955',Location:'#38c172',Official:'#c084fc',Budget:'#f25f5c',Complaint:'#e879a6'};
+const REL_FA = {EXECUTOR_OF:'مجریِ',LOCATED_IN:'واقع در',SUPERVISOR_OF:'ناظرِ',FINANCES:'تأمین مالیِ',COMPLAINS_ABOUT:'شکایت دربارهٔ'};
+
+let DATA = {nodes:[], edges:[]};
+let network, nodesDS, edgesDS;
+const $ = s => document.querySelector(s);
+
+function drawLegend(){
+  $('#legend').innerHTML = Object.entries(GROUPS).map(([k,fa])=>{
+    const c = DATA.nodes.filter(n=>n.group===k).length;
+    return `<span class="chip"><span class="dot" style="background:${COLOR[k]}"></span>${fa} (${c})</span>`;
+  }).join('');
+}
+
+async function load(){
+  $('#status').textContent = 'در حال بارگذاری گراف…';
+  const r = await fetch('/api/graph'); DATA = await r.json();
+  nodesDS = new vis.DataSet(DATA.nodes.map(n=>({
+    id:n.id, label:n.label, group:n.group,
+    color:{background:COLOR[n.group],border:'#0008',highlight:{background:COLOR[n.group],border:'#fff'}},
+    font:{color:'#fff'}
+  })));
+  edgesDS = new vis.DataSet(DATA.edges.map((e,i)=>({
+    id:i, from:e.from, to:e.to, label:REL_FA[e.label]||e.label, arrows:'to',
+    color:{color:'#5b6472',highlight:'#fff'}, font:{color:'#9aa3b2',size:11,strokeWidth:0}
+  })));
+  network = new vis.Network($('#net'), {nodes:nodesDS, edges:edgesDS}, {
+    nodes:{shape:'dot', size:16, borderWidth:2},
+    edges:{smooth:{type:'dynamic'}},
+    physics:{barnesHut:{gravitationalConstant:-9000, springLength:150}, stabilization:{iterations:200}},
+    interaction:{hover:true}
+  });
+  network.on('click', p => p.nodes.length ? showNode(p.nodes[0]) : clearPanel());
+  drawLegend();
+  $('#status').textContent = `${DATA.nodes.length} موجودیت · ${DATA.edges.length} رابطه`;
+}
+
+function showNode(id){
+  const node = DATA.nodes.find(n=>n.id===id);
+  $('#panelTitle').textContent = `${GROUPS[node.group]}: ${node.label}`;
+  const name = k => (DATA.nodes.find(n=>n.id===k)||{}).label || k;
+  const facts = [];
+  DATA.edges.forEach(e=>{
+    if(e.from===id) facts.push({rel:REL_FA[e.label]||e.label, other:name(e.to), ev:e.evidence});
+    else if(e.to===id) facts.push({rel:(REL_FA[e.label]||e.label)+' ⟵', other:name(e.from), ev:e.evidence});
+  });
+  $('#panel').innerHTML = facts.length ? facts.map(f=>
+    `<div class="fact"><span class="rel">${f.rel}</span> ${f.other}
+     ${f.ev?`<div class="ev">🗎 ${f.ev}</div>`:''}</div>`
+  ).join('') : '<p class="hint">رابطه‌ای ثبت نشده.</p>';
+}
+function clearPanel(){
+  $('#panelTitle').textContent='جزئیات';
+  $('#panel').innerHTML='<p class="hint">روی یک گره کلیک کن تا رابطه‌ها و متن شاهدش را ببینی.</p>';
+}
+
+$('#pick').onclick = ()=> $('#file').click();
+$('#refresh').onclick = load;
+$('#file').onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  $('#pick').disabled = true;
+  $('#status').textContent = `در حال پردازش «${f.name}» … (استخراج و بارگذاری)`;
+  const fd = new FormData(); fd.append('file', f);
+  try{
+    const r = await fetch('/api/upload', {method:'POST', body:fd});
+    const j = await r.json();
+    if(!r.ok) throw new Error(j.detail||'خطا');
+    $('#status').textContent = `«${j.file}» اضافه شد ✓`;
+    await load();
+  }catch(err){ $('#status').textContent = 'خطا: '+err.message; }
+  finally{ $('#pick').disabled = false; e.target.value=''; }
+};
+load();
+</script>
+</body>
+</html>
