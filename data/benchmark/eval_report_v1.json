@@ -33,11 +33,11 @@
       53
     ],
     [
-      "performer",
+      "part of",
       32
     ],
     [
-      "part of",
+      "performer",
       32
     ],
     [
@@ -52,5 +52,47 @@
       "member of",
       30
     ]
-  ]
+  ],
+  "recall_per_relation": {
+    "located in the administrative territorial entity": {
+      "gold": 455,
+      "recall": 9.9
+    },
+    "country": {
+      "gold": 351,
+      "recall": 2.0
+    },
+    "contains administrative territorial entity": {
+      "gold": 115,
+      "recall": 0.0
+    },
+    "country of citizenship": {
+      "gold": 90,
+      "recall": 12.2
+    },
+    "notable work": {
+      "gold": 53,
+      "recall": 1.9
+    },
+    "part of": {
+      "gold": 32,
+      "recall": 3.1
+    },
+    "performer": {
+      "gold": 32,
+      "recall": 9.4
+    },
+    "has part": {
+      "gold": 32,
+      "recall": 9.4
+    },
+    "country of origin": {
+      "gold": 31,
+      "recall": 0.0
+    },
+    "member of": {
+      "gold": 30,
+      "recall": 53.3
+    }
+  }
 }

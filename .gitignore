@@ -24,3 +24,6 @@ Thumbs.db
 data/benchmark/*
 !data/benchmark/eval_report_v*.json
 !data/benchmark/triplets_dev_v*.jsonl
+
+# Rendered reports (rebuild with: python -m src.md2pdf docs/FINAL_REPORT.md)
+docs/*.render.html

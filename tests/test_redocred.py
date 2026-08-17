@@ -42,15 +42,18 @@ def test_oracle_hits_the_matching_ceiling():
     It cannot reach exactly 100: a few documents hold two different entities
     with the same surface form and the same type, so a name-based answer is
     ambiguous. That gap is the ceiling of any name-based system on this data,
-    and the evaluation report states it.
+    and the evaluation report states it. The ceiling drops a little as the
+    corpus grows, because a bigger corpus holds more colliding names, so the
+    test checks the ceiling instead of a fixed number.
     """
     docs = gold_docs()
     write_pred([pred_row(d, tr) for d in docs for tr in d["triples"]])
     rep = run_eval()
-    assert rep["precision"] == 100.0, rep
+    assert rep["precision"] >= 99.9, rep
     assert rep["f1"] >= 99.5, rep
     assert rep["entity_unmatched"] == 0, rep
-    print(f"ok test_oracle_hits_the_matching_ceiling (ceiling F1={rep['f1']})")
+    print(f"ok test_oracle_hits_the_matching_ceiling "
+          f"({len(docs)} docs, ceiling F1={rep['f1']})")
 
 
 def test_half_recall():
@@ -58,7 +61,7 @@ def test_half_recall():
     rows = [pred_row(d, tr) for d in docs for tr in d["triples"]]
     write_pred(rows[: len(rows) // 2])
     rep = run_eval()
-    assert rep["precision"] == 100.0, rep
+    assert rep["precision"] >= 99.9, rep
     assert 40 < rep["recall"] < 60, rep
     print("ok test_half_recall")
 

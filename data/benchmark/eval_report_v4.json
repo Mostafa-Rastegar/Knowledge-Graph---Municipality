@@ -2,15 +2,15 @@
   "documents": 50,
   "gold_triples": 1868,
   "gold_triples_unseen": 1634,
-  "predicted_rows": 1026,
-  "predicted_triples": 985,
-  "entity_unmatched": 37,
-  "precision": 34.11,
-  "recall": 17.99,
-  "f1": 23.55,
-  "ign_precision": 32.11,
-  "ign_recall": 18.73,
-  "ign_f1": 23.66,
+  "predicted_rows": 543,
+  "predicted_triples": 501,
+  "entity_unmatched": 42,
+  "precision": 45.11,
+  "recall": 12.1,
+  "f1": 19.08,
+  "ign_precision": 43.27,
+  "ign_recall": 12.79,
+  "ign_f1": 19.74,
   "top_gold_relations": [
     [
       "located in the administrative territorial entity",
@@ -33,11 +33,11 @@
       53
     ],
     [
-      "has part",
+      "performer",
       32
     ],
     [
-      "performer",
+      "has part",
       32
     ],
     [
@@ -56,35 +56,35 @@
   "recall_per_relation": {
     "located in the administrative territorial entity": {
       "gold": 455,
-      "recall": 26.6
+      "recall": 11.0
     },
     "country": {
       "gold": 351,
-      "recall": 7.1
+      "recall": 9.7
     },
     "contains administrative territorial entity": {
       "gold": 115,
-      "recall": 25.2
+      "recall": 2.6
     },
     "country of citizenship": {
       "gold": 90,
-      "recall": 21.1
+      "recall": 22.2
     },
     "notable work": {
       "gold": 53,
       "recall": 1.9
     },
-    "has part": {
-      "gold": 32,
-      "recall": 15.6
-    },
     "performer": {
       "gold": 32,
       "recall": 3.1
     },
+    "has part": {
+      "gold": 32,
+      "recall": 9.4
+    },
     "part of": {
       "gold": 32,
-      "recall": 15.6
+      "recall": 0.0
     },
     "country of origin": {
       "gold": 31,
@@ -92,7 +92,7 @@
     },
     "member of": {
       "gold": 30,
-      "recall": 33.3
+      "recall": 23.3
     }
   }
 }

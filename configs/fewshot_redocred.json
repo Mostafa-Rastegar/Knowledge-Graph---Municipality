@@ -1,0 +1,844 @@
+[
+  {
+    "input": "Document:\nMarcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of Oklahoma City , Oklahoma , Jones graduated from Michigan State University . She won three gold medals at the 1967 Pan American Games and a record 35 national championships and 24 North American championships . Her husband , William Smoke , finished fourth in the second repechage event of the K-4 1000 m at the 1964 Summer Olympics in Tokyo . Jones ' son , Jeff , finished seventh in the K-2 1000 m semifinal at the 2004 Summer Olympics in Athens . Her sister , the late Sperry Rademaker , finished seventh in the K-2 500 m event at the 1968 Summer Olympics in Mexico City .\n\nEntities:\n- Jones [PER] (also: Marcia Ingram Jones Smoke)\n- July 18, 1941 [TIME]\n- American [LOC]\n- 1964 [TIME]\n- 1968 [TIME]\n- 1972 [TIME]\n- Olympics [MISC]\n- K-1 500 m [MISC]\n- Oklahoma City [LOC]\n- Oklahoma [LOC]\n- Michigan State University [ORG]\n- three [NUM]\n- 1967 [TIME]\n- Pan American Games [MISC]\n- 35 [NUM]\n- national championships [MISC]\n- 24 [NUM]\n- North American championships [MISC]\n- William Smoke [PER]\n- K-4 1000 m [MISC]\n- 1964 Summer Olympics [MISC]\n- Tokyo [LOC]\n- Jeff [PER]\n- K-2 1000 m [MISC]\n- 1968 Summer Olympics [MISC] (also: 2004 Summer Olympics)\n- Athens [LOC]\n- Sperry Rademaker [PER]\n- K-2 500 m [MISC]\n- Mexico City [LOC]",
+    "output": {
+      "triplets": [
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Oklahoma City"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Oklahoma"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Oklahoma"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "date of birth",
+          "object": {
+            "type": "TIME",
+            "name": "July 18, 1941"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "educated at",
+          "object": {
+            "type": "ORG",
+            "name": "Michigan State University"
+          },
+          "evidence": "A native of Oklahoma City , Oklahoma , Jones graduated from Michigan State University ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "country of citizenship",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "predicate": "contains administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Oklahoma"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Sperry Rademaker"
+          },
+          "predicate": "country of citizenship",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "instance of",
+          "object": {
+            "type": "MISC",
+            "name": "Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "place of birth",
+          "object": {
+            "type": "LOC",
+            "name": "Oklahoma City"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Sperry Rademaker"
+          },
+          "predicate": "sibling",
+          "object": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "location",
+          "object": {
+            "type": "LOC",
+            "name": "Mexico City"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jeff"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "subclass of",
+          "object": {
+            "type": "MISC",
+            "name": "Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "spouse",
+          "object": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jeff"
+          },
+          "predicate": "father",
+          "object": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "location",
+          "object": {
+            "type": "LOC",
+            "name": "Tokyo"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "K-4 1000 m"
+          },
+          "predicate": "part of",
+          "object": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "location",
+          "object": {
+            "type": "LOC",
+            "name": "Athens"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "end time",
+          "object": {
+            "type": "TIME",
+            "name": "1964"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "ORG",
+            "name": "Michigan State University"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "sibling",
+          "object": {
+            "type": "PER",
+            "name": "Sperry Rademaker"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "place of birth",
+          "object": {
+            "type": "LOC",
+            "name": "Oklahoma"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "predicate": "spouse",
+          "object": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "instance of",
+          "object": {
+            "type": "MISC",
+            "name": "Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Sperry Rademaker"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "start time",
+          "object": {
+            "type": "TIME",
+            "name": "1964"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "predicate": "child",
+          "object": {
+            "type": "PER",
+            "name": "Jeff"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Jeff"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "has part",
+          "object": {
+            "type": "MISC",
+            "name": "K-4 1000 m"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "William Smoke"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1964 Summer Olympics"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Jones"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "1968 Summer Olympics"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Sperry Rademaker"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Oklahoma City"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer ."
+        },
+        {
+          "subject": {
+            "type": "ORG",
+            "name": "Michigan State University"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "American"
+          },
+          "evidence": "Marcia Ingram Jones Smoke ( born July 18 , 1941 ) is an American sprint canoer . She competed at the 1964 , 1968 and 1972 Olympics and won a bronze medal in the K-1 500 m event in 1964 . A native of O"
+        }
+      ]
+    }
+  },
+  {
+    "input": "Document:\nPaul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp . He studied at the University of Bologna . In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence . Arriving first at the Ionian Islands , Bonaparte was welcomed August 24 at Poros by the British Admiral Cochrane , who was entrusted with command of the Greek fleet . Bonaparte served on the flagship frigate Hellas , which after a series of unsuccessful operations stood off in the strait of the island Spetses . On 6 September 1827 , on board the Hellas , Bonaparte was mortally wounded while cleaning his own gun and died the day after . After the end of the war in 1832 , Bonaparte was buried in a mausoleum on the island of Sphacteria , close to the French sailors who fell in the Battle of Navarino .\n\nEntities:\n- Bonaparte [PER] (also: Paul Marie Bonaparte)\n- February 19, 1809 [TIME]\n- Canino [LOC]\n- September 7 , 1827 [TIME]\n- Nafplio [LOC]\n- Greek War of Independence [MISC]\n- Lucien Bonaparte [PER]\n- Alexandrine de Bleschamp [PER]\n- University of Bologna [ORG]\n- March 1827 [TIME]\n- Greece [LOC] (also: Greek)\n- Ionian Islands [LOC]\n- August 24 [TIME]\n- Poros [LOC]\n- British [LOC]\n- Cochrane [PER]\n- Hellas [MISC]\n- Spetses [LOC] (also: Sphacteria)\n- 6 September 1827 [TIME]\n- 1832 [TIME]\n- French [LOC]\n- Battle of Navarino [MISC]",
+    "output": {
+      "triplets": [
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "date of birth",
+          "object": {
+            "type": "TIME",
+            "name": "February 19, 1809"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "conflict",
+          "object": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "father",
+          "object": {
+            "type": "PER",
+            "name": "Lucien Bonaparte"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "place of birth",
+          "object": {
+            "type": "LOC",
+            "name": "Canino"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "date of death",
+          "object": {
+            "type": "TIME",
+            "name": "September 7 , 1827"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "mother",
+          "object": {
+            "type": "PER",
+            "name": "Alexandrine de Bleschamp"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "place of death",
+          "object": {
+            "type": "LOC",
+            "name": "Nafplio"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Lucien Bonaparte"
+          },
+          "predicate": "spouse",
+          "object": {
+            "type": "PER",
+            "name": "Alexandrine de Bleschamp"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "predicate": "contains administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Ionian Islands"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Poros"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Battle of Navarino"
+          },
+          "predicate": "part of",
+          "object": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Alexandrine de Bleschamp"
+          },
+          "predicate": "child",
+          "object": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Alexandrine de Bleschamp"
+          },
+          "predicate": "spouse",
+          "object": {
+            "type": "PER",
+            "name": "Lucien Bonaparte"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Ionian Islands"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Ionian Islands"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Spetses"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "Arriving first at the Ionian Islands , Bonaparte was welcomed August 24 at Poros by the British Admiral Cochrane , who was entrusted with command of the Greek fleet ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Nafplio"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Lucien Bonaparte"
+          },
+          "predicate": "child",
+          "object": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "evidence": "Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexandrine de Bleschamp ."
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Hellas"
+          },
+          "predicate": "country",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Cochrane"
+          },
+          "predicate": "conflict",
+          "object": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "educated at",
+          "object": {
+            "type": "ORG",
+            "name": "University of Bologna"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "predicate": "end time",
+          "object": {
+            "type": "TIME",
+            "name": "1832"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "predicate": "has part",
+          "object": {
+            "type": "MISC",
+            "name": "Battle of Navarino"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "predicate": "participant",
+          "object": {
+            "type": "PER",
+            "name": "Cochrane"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Bonaparte"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Poros"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "In March 1827 he secretly left the city , and under an assumed name , went to Greece to take part in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Spetses"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "Arriving first at the Ionian Islands , Bonaparte was welcomed August 24 at Poros by the British Admiral Cochrane , who was entrusted with command of the Greek fleet ."
+        },
+        {
+          "subject": {
+            "type": "LOC",
+            "name": "Nafplio"
+          },
+          "predicate": "located in the administrative territorial entity",
+          "object": {
+            "type": "LOC",
+            "name": "Greece"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence ."
+        },
+        {
+          "subject": {
+            "type": "PER",
+            "name": "Cochrane"
+          },
+          "predicate": "participant of",
+          "object": {
+            "type": "MISC",
+            "name": "Greek War of Independence"
+          },
+          "evidence": "Paul Marie Bonaparte ( February 19 , 1809 in Canino – September 7 , 1827 in Nafplio ) fought in the Greek War of Independence . Paul Marie Bonaparte was the third child of Lucien Bonaparte and Alexand"
+        }
+      ]
+    }
+  }
+]

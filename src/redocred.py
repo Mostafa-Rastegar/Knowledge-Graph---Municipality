@@ -150,6 +150,93 @@ def cmd_prepare(args: argparse.Namespace) -> None:
     print(f"train_fact_keys={keys_path}")
 
 
+def cmd_fewshot(args: argparse.Namespace) -> None:
+    """Build worked examples for the prompt, taken only from the train split.
+
+    The examples never come from the split we score on, so the measurement
+    stays honest. We pick short documents that hold many relations, because
+    they show the model the density we expect without a long prompt.
+    """
+    names = rel_names()
+    train = load_split("train")
+    # A typical dev document holds about 37 relations. We keep the examples near
+    # that number, so the model learns the real density and the prompt stays short.
+    ranked = sorted(
+        (d for d in train if 100 <= len(doc_text(d).split()) <= 200 and 25 <= len(d["labels"]) <= 40),
+        key=lambda d: -len({names[l["r"]] for l in d["labels"]}),
+    )
+    examples = []
+    for doc in ranked[: args.n]:
+        examples.append(
+            {
+                "input": f"Document:\n{doc_text(doc)}\n\nEntities:\n{entity_block(doc)}",
+                "output": {
+                    "triplets": [
+                        {
+                            "subject": {
+                                "type": doc["vertexSet"][l["h"]][0]["type"],
+                                "name": sorted({m["name"] for m in doc["vertexSet"][l["h"]]})[0],
+                            },
+                            "predicate": names[l["r"]],
+                            "object": {
+                                "type": doc["vertexSet"][l["t"]][0]["type"],
+                                "name": sorted({m["name"] for m in doc["vertexSet"][l["t"]]})[0],
+                            },
+                            "evidence": " ".join(doc["sents"][l["evidence"][0]])
+                            if l.get("evidence")
+                            else doc_text(doc)[:200],
+                        }
+                        for l in doc["labels"]
+                    ]
+                },
+            }
+        )
+    path = Path(args.out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(examples, ensure_ascii=False, indent=2), encoding="utf-8")
+    for ex in examples:
+        print(f"example words={len(ex['input'].split())} triplets={len(ex['output']['triplets'])}")
+    print(f"wrote {path}")
+
+
+def cmd_graph(args: argparse.Namespace) -> None:
+    """Print one document's extracted graph as a Mermaid diagram.
+
+    The report needs a picture of the English graph. Mermaid renders in the
+    report itself, so this needs no database and no browser.
+    """
+    rows = [
+        json.loads(line)
+        for line in Path(args.pred).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    doc_id = args.doc or collections.Counter(r["document_id"] for r in rows).most_common(1)[0][0]
+    rows = [r for r in rows if r["document_id"] == doc_id][: args.limit]
+
+    ids: dict[str, str] = {}
+
+    def node(ent: dict) -> str:
+        name = ent["name"]
+        if name not in ids:
+            ids[name] = f"n{len(ids)}"
+        return ids[name]
+
+    lines = ["```mermaid", "graph LR"]
+    for r in rows:
+        s, o = node(r["subject"]), node(r["object"])
+        label = r["predicate"].replace("the administrative territorial entity", "admin. entity")
+        style = "-.->" if r.get("derived_by") else "-->"
+        lines.append(f'  {s}["{r["subject"]["name"]} ({r["subject"]["type"]})"] {style}|{label}| '
+                     f'{o}["{r["object"]["name"]} ({r["object"]["type"]})"]')
+    lines.append("```")
+    out = "\n".join(lines)
+    if args.out:
+        Path(args.out).write_text(out, encoding="utf-8")
+        print(f"doc={doc_id} edges={len(rows)} nodes={len(ids)} -> {args.out}")
+    else:
+        print(out)
+
+
 LOCATED_IN = "located in the administrative territorial entity"
 CONTAINS = "contains administrative territorial entity"
 COUNTRY = "country"
@@ -349,6 +436,17 @@ def cmd_eval(args: argparse.Namespace) -> None:
                     "ign_recall": round(ir, 2),
                     "ign_f1": round(if1, 2),
                     "top_gold_relations": per_rel.most_common(10),
+                    # Recall for the ten most frequent relations. It shows which
+                    # relation the system misses, not only the overall number.
+                    "recall_per_relation": {
+                        rel: {
+                            "gold": count,
+                            "recall": round(
+                                len({k for k in gold_set & pred_set if k[2] == rel}) / count * 100, 1
+                            ),
+                        }
+                        for rel, count in per_rel.most_common(10)
+                    },
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -366,6 +464,18 @@ def main() -> None:
     prep.add_argument("--split", default="dev", choices=["dev", "test"])
     prep.add_argument("--limit", type=int, default=50)
     prep.set_defaults(func=cmd_prepare)
+
+    fs = sub.add_parser("fewshot", help="build prompt examples from the train split")
+    fs.add_argument("--n", type=int, default=2)
+    fs.add_argument("--out", default="configs/fewshot_redocred.json")
+    fs.set_defaults(func=cmd_fewshot)
+
+    gr = sub.add_parser("graph", help="print one document's graph as Mermaid")
+    gr.add_argument("pred")
+    gr.add_argument("--doc", help="document id; default is the document with most facts")
+    gr.add_argument("--limit", type=int, default=25)
+    gr.add_argument("--out")
+    gr.set_defaults(func=cmd_graph)
 
     cl = sub.add_parser("closure", help="add facts implied by ontology rules")
     cl.add_argument("pred")

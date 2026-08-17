@@ -112,6 +112,21 @@ def load_ontology(path: Path) -> None:
     )
 
 
+def load_fewshot(path: Path) -> None:
+    """Append worked examples to the system prompt.
+
+    The examples come from the train split, never from the split we score on.
+    They show the model the answer format and the relation density we expect.
+    """
+    global SYSTEM_PROMPT
+    examples = json.loads(path.read_text(encoding="utf-8"))
+    blocks = []
+    for i, ex in enumerate(examples, 1):
+        answer = json.dumps(ex["output"], ensure_ascii=False)
+        blocks.append(f"Example {i} input:\n{ex['input']}\n\nExample {i} answer:\n{answer}")
+    SYSTEM_PROMPT = SYSTEM_PROMPT + "\n\n" + "\n\n".join(blocks)
+
+
 class Entity(BaseModel):
     type: str
     name: str
@@ -274,12 +289,16 @@ def main() -> None:
     parser.add_argument("--out", default="data/extracted/triplets.jsonl")
     parser.add_argument("--force", action="store_true", help="re-extract even cached chunks")
     parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
+    parser.add_argument("--fewshot", help="JSON file with worked examples for the prompt")
     args = parser.parse_args()
 
     if args.ontology:
         load_ontology(Path(args.ontology))
         log.info("ontology_loaded", path=args.ontology, entity_types=len(ENTITY_TYPES),
                  allowed_relations=len(ALLOWED_RELATIONS))
+    if args.fewshot:
+        load_fewshot(Path(args.fewshot))
+        log.info("fewshot_loaded", path=args.fewshot, prompt_chars=len(SYSTEM_PROMPT))
 
     chunks_path = Path(args.chunks)
     if not chunks_path.exists():
