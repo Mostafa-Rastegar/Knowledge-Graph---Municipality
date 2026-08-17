@@ -310,11 +310,22 @@ def main() -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     existing = {} if args.force else load_existing(out_path)
+    if not args.force:
+        # A run that died left its progress in the .part file. Take it too, so
+        # the work of every earlier attempt adds up instead of being repeated.
+        leftover = load_existing(out_path.with_suffix(out_path.suffix + ".part"))
+        if leftover:
+            log.info("resumed_from_partial_run", chunks=len(leftover))
+            existing.update(leftover)
     client: Optional[OpenAI] = None
 
     seen_facts: set[str] = set()
     chunks_done = chunks_cached = chunks_failed = facts = 0
-    with out_path.open("w", encoding="utf-8") as fh:
+    # Write to a temporary file and move it into place at the end. Opening the
+    # output file directly empties it first, so a run that dies part way loses
+    # every chunk the earlier runs had finished.
+    tmp_path = out_path.with_suffix(out_path.suffix + ".part")
+    with tmp_path.open("w", encoding="utf-8") as fh:
         for line in chunks_path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line:
@@ -346,6 +357,7 @@ def main() -> None:
                 facts += 1
             fh.flush()  # a stopped run keeps every chunk it finished
 
+    os.replace(tmp_path, out_path)
     log.info("done", chunks=chunks_done, cached=chunks_cached, failed=chunks_failed,
              facts=facts, output=str(out_path))
     if chunks_failed:
