@@ -201,10 +201,13 @@ def client_from_env() -> OpenAI:
         raise SystemExit("LLM_API_KEY is empty. Put the key in .env (never hardcode it).")
     if not base_url:
         raise SystemExit("LLM_BASE_URL is empty. Set it in .env.")
-    return OpenAI(api_key=api_key, base_url=base_url)
+    # A long batch meets slow requests. The default timeout is short enough that
+    # one slow answer ends the whole run, so we give each request more time.
+    timeout = float(os.environ.get("LLM_TIMEOUT", "180"))
+    return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=20))
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=2, max=60))
 def call_llm(client: OpenAI, text: str) -> str:
     resp = client.chat.completions.create(
         model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
@@ -310,7 +313,7 @@ def main() -> None:
     client: Optional[OpenAI] = None
 
     seen_facts: set[str] = set()
-    chunks_done = chunks_cached = facts = 0
+    chunks_done = chunks_cached = chunks_failed = facts = 0
     with out_path.open("w", encoding="utf-8") as fh:
         for line in chunks_path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
@@ -325,7 +328,14 @@ def main() -> None:
             else:
                 if client is None:
                     client = client_from_env()
-                records = extract_chunk(client, chunk)
+                try:
+                    records = extract_chunk(client, chunk)
+                except Exception as err:
+                    # One dead chunk must not end a batch of hundreds. We skip it
+                    # and leave it out of the output, so a later run retries it.
+                    chunks_failed += 1
+                    log.error("chunk_failed", chunk_id=chunk_id, error=str(err))
+                    continue
                 log.info("extracted", chunk_id=chunk_id, triplets=len(records))
             chunks_done += 1
             for rec in records:
@@ -334,8 +344,12 @@ def main() -> None:
                 seen_facts.add(rec["fact_id"])
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 facts += 1
+            fh.flush()  # a stopped run keeps every chunk it finished
 
-    log.info("done", chunks=chunks_done, cached=chunks_cached, facts=facts, output=str(out_path))
+    log.info("done", chunks=chunks_done, cached=chunks_cached, failed=chunks_failed,
+             facts=facts, output=str(out_path))
+    if chunks_failed:
+        log.warning("rerun_to_retry_failed_chunks", failed=chunks_failed)
 
 
 if __name__ == "__main__":
