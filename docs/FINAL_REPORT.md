@@ -501,7 +501,13 @@ python -m src.redocred eval data/benchmark/triplets_dev_v6.jsonl \
 python -m src.redocred graph data/benchmark/triplets_dev_v6.jsonl \
     --doc redocred_dev_0002 --out docs/graph_redocred.md
 python -m src.md2pdf docs/FINAL_REPORT.md
+
+# ۸) بارگذاری گراف انگلیسی در همان Neo4j (نیازمند اجرای Docker)
+python -m src.load_neo4j data/benchmark/triplets_dev_v6.jsonl \
+    --ontology configs/ontology_redocred.json
 ```
+
+بارگذار Neo4j هم مانند استخراج‌کننده، هستان‌شناسی را از فایل JSON می‌خواند. پس همان پایگاه‌داده و همان رابط وب، گراف انگلیسی را هم نشان می‌دهد. نام رابطه‌ی انگلیسی که فاصله دارد، به نوع یال Cypher تبدیل می‌شود؛ برای نمونه `located in the administrative territorial entity` به `LOCATED_IN_THE_ADMINISTRATIVE_TERRITORIAL_ENTITY`.
 
 یا با یک فرمان:
 

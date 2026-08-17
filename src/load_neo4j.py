@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 
 import structlog
@@ -43,6 +44,25 @@ RELATION_CYPHER = {
     ("Complaint", "COMPLAINS_ABOUT", "Location"):
         "MATCH (s:Complaint {key:$sk}), (o:Location {key:$ok}) MERGE (s)-[:COMPLAINS_ABOUT]->(o)",
 }
+
+
+def load_ontology(path: Path) -> None:
+    """Replace the municipality schema with one defined in JSON.
+
+    The Re-DocRED run uses this. A relation name there holds spaces, so the
+    name becomes an upper-case Cypher relationship type. Labels and types come
+    from the ontology file, never from a record, so inlining them is safe.
+    """
+    global ENTITY_LABELS, RELATION_CYPHER
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    ENTITY_LABELS = sorted(spec["entity_types"])
+    RELATION_CYPHER = {}
+    for subject_type, relation, object_type in spec["allowed"]:
+        rel_type = re.sub(r"\W+", "_", relation).strip("_").upper()
+        RELATION_CYPHER[(subject_type, relation, object_type)] = (
+            f"MATCH (s:{subject_type} {{key:$sk}}), (o:{object_type} {{key:$ok}}) "
+            f"MERGE (s)-[:{rel_type}]->(o)"
+        )
 
 
 def ensure_schema(session) -> None:
@@ -102,7 +122,13 @@ def driver_from_env():
 def main() -> None:
     parser = argparse.ArgumentParser(description="Load triplets into Neo4j")
     parser.add_argument("triplets", nargs="?", default="data/extracted/triplets.jsonl")
+    parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
     args = parser.parse_args()
+
+    if args.ontology:
+        load_ontology(Path(args.ontology))
+        log.info("ontology_loaded", path=args.ontology,
+                 labels=len(ENTITY_LABELS), relations=len(RELATION_CYPHER))
 
     path = Path(args.triplets)
     if not path.exists():

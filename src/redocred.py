@@ -275,6 +275,10 @@ def cmd_closure(args: argparse.Namespace) -> None:
             types[r["object"]["name"]] = r["object"]["type"]
             evidence[(r["subject"]["name"], r["predicate"], r["object"]["name"])] = r["evidence"]
 
+        def node_key(name: str) -> str:
+            """The key format of src/extract.py: type, then the collapsed name."""
+            return f"{types.get(name, 'MISC')}:{' '.join(name.split())}"
+
         def add(subject: str, predicate: str, obj: str, why: list[str], rule: str) -> bool:
             key = (subject, predicate, obj)
             if key in facts or subject == obj:
@@ -286,9 +290,13 @@ def cmd_closure(args: argparse.Namespace) -> None:
                 "chunk_id": f"{doc_id}_c0",
                 "document_id": doc_id,
                 "source_path": rule,
-                "subject": {"type": types.get(subject, "MISC"), "name": subject},
+                # The same key format the extractor uses, so the graph loader
+                # merges a derived fact onto the node an extracted fact created.
+                "subject": {"type": types.get(subject, "MISC"), "name": subject,
+                            "key": node_key(subject)},
                 "predicate": predicate,
-                "object": {"type": types.get(obj, "MISC"), "name": obj},
+                "object": {"type": types.get(obj, "MISC"), "name": obj,
+                           "key": node_key(obj)},
                 "evidence": " | ".join(w for w in why if w)[:600],
                 "derived_by": rule,
             }

@@ -33,11 +33,11 @@
       53
     ],
     [
-      "part of",
+      "has part",
       32
     ],
     [
-      "has part",
+      "part of",
       32
     ],
     [
@@ -74,11 +74,11 @@
       "gold": 53,
       "recall": 1.9
     },
-    "part of": {
+    "has part": {
       "gold": 32,
       "recall": 9.4
     },
-    "has part": {
+    "part of": {
       "gold": 32,
       "recall": 9.4
     },

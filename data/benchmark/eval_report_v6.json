@@ -37,11 +37,11 @@
       32
     ],
     [
-      "has part",
+      "performer",
       32
     ],
     [
-      "performer",
+      "has part",
       32
     ],
     [
@@ -78,13 +78,13 @@
       "gold": 32,
       "recall": 15.6
     },
-    "has part": {
-      "gold": 32,
-      "recall": 15.6
-    },
     "performer": {
       "gold": 32,
       "recall": 12.5
+    },
+    "has part": {
+      "gold": 32,
+      "recall": 15.6
     },
     "country of origin": {
       "gold": 31,

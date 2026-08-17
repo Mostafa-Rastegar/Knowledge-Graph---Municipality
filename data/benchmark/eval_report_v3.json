@@ -37,11 +37,11 @@
       32
     ],
     [
-      "performer",
+      "part of",
       32
     ],
     [
-      "part of",
+      "performer",
       32
     ],
     [
@@ -78,13 +78,13 @@
       "gold": 32,
       "recall": 15.6
     },
-    "performer": {
-      "gold": 32,
-      "recall": 3.1
-    },
     "part of": {
       "gold": 32,
       "recall": 15.6
+    },
+    "performer": {
+      "gold": 32,
+      "recall": 3.1
     },
     "country of origin": {
       "gold": 31,
