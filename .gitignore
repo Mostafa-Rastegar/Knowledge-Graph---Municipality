@@ -23,6 +23,7 @@ Thumbs.db
 # The evaluation results stay in git: they are the evidence behind the report.
 data/benchmark/*
 !data/benchmark/eval_report_v*.json
+!data/benchmark/eval_report_full*.json
 !data/benchmark/triplets_dev_v*.jsonl
 
 # Rendered reports (rebuild with: python -m src.md2pdf docs/FINAL_REPORT.md)
