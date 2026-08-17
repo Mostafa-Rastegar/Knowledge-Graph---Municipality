@@ -7,6 +7,7 @@
 
 param(
     [switch]$Benchmark,
+    [switch]$Full,
     [switch]$Pdf,
     [int]$Limit = 50
 )
@@ -16,7 +17,33 @@ $env:PYTHONUTF8 = "1"
 
 function Step($text) { Write-Host "`n=== $text ===" -ForegroundColor Cyan }
 
-if ($Benchmark) {
+if ($Full) {
+    # The full 500-document Dev run. Both passes resume from their output file,
+    # so a stopped run continues here instead of starting again.
+    Step "1/4 pass A of 500 documents (no examples in the prompt)"
+    python -m src.extract data/benchmark/chunks_dev.jsonl `
+        --out data/benchmark/triplets_full_a.jsonl `
+        --ontology configs/ontology_redocred.json
+
+    Step "2/4 pass B of 500 documents (two examples in the prompt)"
+    python -m src.extract data/benchmark/chunks_dev.jsonl `
+        --out data/benchmark/triplets_full_b.jsonl `
+        --ontology configs/ontology_redocred.json `
+        --fewshot configs/fewshot_redocred.json
+
+    Step "3/4 consensus of both passes, then the closure layer"
+    Get-Content data/benchmark/triplets_full_a.jsonl, data/benchmark/triplets_full_b.jsonl |
+        Set-Content -Encoding utf8 data/benchmark/_full_union.jsonl
+    python -m src.redocred closure data/benchmark/_full_union.jsonl `
+        --out data/benchmark/triplets_full.jsonl
+    Remove-Item data/benchmark/_full_union.jsonl
+
+    Step "4/4 evaluate against all 500 gold documents"
+    python -m src.redocred eval data/benchmark/triplets_full.jsonl `
+        --gold data/benchmark/gold_dev.jsonl `
+        --report data/benchmark/eval_report_full.json
+}
+elseif ($Benchmark) {
     Step "1/5 prepare Re-DocRED ($Limit documents)"
     python -m src.redocred prepare --split dev --limit $Limit
 
