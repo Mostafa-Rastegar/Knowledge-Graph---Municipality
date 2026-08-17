@@ -1,0 +1,3382 @@
+{
+  "name": "re-docred",
+  "language": "en",
+  "entity_types": [
+    "LOC",
+    "MISC",
+    "NUM",
+    "ORG",
+    "PER",
+    "TIME"
+  ],
+  "relations": {
+    "P6": "head of government",
+    "P17": "country",
+    "P19": "place of birth",
+    "P20": "place of death",
+    "P22": "father",
+    "P25": "mother",
+    "P26": "spouse",
+    "P27": "country of citizenship",
+    "P30": "continent",
+    "P31": "instance of",
+    "P35": "head of state",
+    "P36": "capital",
+    "P37": "official language",
+    "P39": "position held",
+    "P40": "child",
+    "P50": "author",
+    "P54": "member of sports team",
+    "P57": "director",
+    "P58": "screenwriter",
+    "P69": "educated at",
+    "P86": "composer",
+    "P102": "member of political party",
+    "P108": "employer",
+    "P112": "founded by",
+    "P118": "league",
+    "P123": "publisher",
+    "P127": "owned by",
+    "P131": "located in the administrative territorial entity",
+    "P136": "genre",
+    "P137": "operator",
+    "P140": "religion",
+    "P150": "contains administrative territorial entity",
+    "P155": "follows",
+    "P156": "followed by",
+    "P159": "headquarters location",
+    "P161": "cast member",
+    "P162": "producer",
+    "P166": "award received",
+    "P170": "creator",
+    "P171": "parent taxon",
+    "P172": "ethnic group",
+    "P175": "performer",
+    "P176": "manufacturer",
+    "P178": "developer",
+    "P179": "series",
+    "P190": "sister city",
+    "P194": "legislative body",
+    "P205": "basin country",
+    "P206": "located in or next to body of water",
+    "P241": "military branch",
+    "P264": "record label",
+    "P272": "production company",
+    "P276": "location",
+    "P279": "subclass of",
+    "P355": "subsidiary",
+    "P361": "part of",
+    "P364": "original language of work",
+    "P400": "platform",
+    "P403": "mouth of the watercourse",
+    "P449": "original network",
+    "P463": "member of",
+    "P488": "chairperson",
+    "P495": "country of origin",
+    "P527": "has part",
+    "P551": "residence",
+    "P569": "date of birth",
+    "P570": "date of death",
+    "P571": "inception",
+    "P576": "dissolved, abolished or demolished",
+    "P577": "publication date",
+    "P580": "start time",
+    "P582": "end time",
+    "P585": "point in time",
+    "P607": "conflict",
+    "P674": "characters",
+    "P676": "lyrics by",
+    "P706": "located on terrain feature",
+    "P710": "participant",
+    "P737": "influenced by",
+    "P740": "location of formation",
+    "P749": "parent organization",
+    "P800": "notable work",
+    "P807": "separated from",
+    "P840": "narrative location",
+    "P937": "work location",
+    "P1001": "applies to jurisdiction",
+    "P1056": "product or material produced",
+    "P1198": "unemployment rate",
+    "P1336": "territory claimed by",
+    "P1344": "participant of",
+    "P1365": "replaces",
+    "P1366": "replaced by",
+    "P1376": "capital of",
+    "P1412": "languages spoken, written or signed",
+    "P1441": "present in work",
+    "P3373": "sibling"
+  },
+  "allowed": [
+    [
+      "LOC",
+      "applies to jurisdiction",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "applies to jurisdiction",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "author",
+      "PER"
+    ],
+    [
+      "LOC",
+      "award received",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "basin country",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "basin country",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "basin country",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "basin country",
+      "PER"
+    ],
+    [
+      "LOC",
+      "capital",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "capital",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "capital",
+      "PER"
+    ],
+    [
+      "LOC",
+      "capital of",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "capital of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "capital of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "cast member",
+      "PER"
+    ],
+    [
+      "LOC",
+      "chairperson",
+      "PER"
+    ],
+    [
+      "LOC",
+      "characters",
+      "PER"
+    ],
+    [
+      "LOC",
+      "child",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "child",
+      "PER"
+    ],
+    [
+      "LOC",
+      "conflict",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "contains administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "contains administrative territorial entity",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "contains administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "contains administrative territorial entity",
+      "PER"
+    ],
+    [
+      "LOC",
+      "continent",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "continent",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "country",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "country",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "country",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "country",
+      "PER"
+    ],
+    [
+      "LOC",
+      "country of citizenship",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "creator",
+      "PER"
+    ],
+    [
+      "LOC",
+      "date of birth",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "date of death",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "developer",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "director",
+      "PER"
+    ],
+    [
+      "LOC",
+      "dissolved, abolished or demolished",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "ethnic group",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "ethnic group",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "ethnic group",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "father",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "father",
+      "PER"
+    ],
+    [
+      "LOC",
+      "followed by",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "followed by",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "followed by",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "follows",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "follows",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "founded by",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "founded by",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "founded by",
+      "PER"
+    ],
+    [
+      "LOC",
+      "has part",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "has part",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "has part",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "head of government",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "head of government",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "head of government",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "head of government",
+      "PER"
+    ],
+    [
+      "LOC",
+      "head of state",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "head of state",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "head of state",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "head of state",
+      "PER"
+    ],
+    [
+      "LOC",
+      "headquarters location",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "headquarters location",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "inception",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "inception",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "instance of",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "instance of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "instance of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "languages spoken, written or signed",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "languages spoken, written or signed",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "league",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "league",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "legislative body",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "legislative body",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "legislative body",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "located in or next to body of water",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "located in or next to body of water",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "located in or next to body of water",
+      "PER"
+    ],
+    [
+      "LOC",
+      "located in the administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "located in the administrative territorial entity",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "located in the administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "located in the administrative territorial entity",
+      "PER"
+    ],
+    [
+      "LOC",
+      "located on terrain feature",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "located on terrain feature",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "location",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "location of formation",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "manufacturer",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "member of",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "member of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "member of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "member of political party",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "military branch",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "mouth of the watercourse",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "narrative location",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "narrative location",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "notable work",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "official language",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "official language",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "official language",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "operator",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "operator",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "original language of work",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "original language of work",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "original language of work",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "original network",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "owned by",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "owned by",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "owned by",
+      "PER"
+    ],
+    [
+      "LOC",
+      "parent organization",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "parent organization",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "parent taxon",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "parent taxon",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "part of",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "part of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "part of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "part of",
+      "PER"
+    ],
+    [
+      "LOC",
+      "part of",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "participant",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "participant",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "participant",
+      "PER"
+    ],
+    [
+      "LOC",
+      "participant of",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "participant of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "participant of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "place of birth",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "place of death",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "platform",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "point in time",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "present in work",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "production company",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "publication date",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "publisher",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "record label",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "religion",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "religion",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "replaced by",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "replaced by",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "replaces",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "replaces",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "screenwriter",
+      "PER"
+    ],
+    [
+      "LOC",
+      "separated from",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "series",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "sibling",
+      "PER"
+    ],
+    [
+      "LOC",
+      "sister city",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "spouse",
+      "PER"
+    ],
+    [
+      "LOC",
+      "start time",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "subclass of",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "subclass of",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "subsidiary",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "subsidiary",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "territory claimed by",
+      "LOC"
+    ],
+    [
+      "LOC",
+      "territory claimed by",
+      "MISC"
+    ],
+    [
+      "LOC",
+      "territory claimed by",
+      "ORG"
+    ],
+    [
+      "LOC",
+      "unemployment rate",
+      "NUM"
+    ],
+    [
+      "LOC",
+      "unemployment rate",
+      "TIME"
+    ],
+    [
+      "LOC",
+      "work location",
+      "PER"
+    ],
+    [
+      "MISC",
+      "applies to jurisdiction",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "applies to jurisdiction",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "applies to jurisdiction",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "author",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "author",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "author",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "author",
+      "PER"
+    ],
+    [
+      "MISC",
+      "award received",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "award received",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "capital",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "cast member",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "cast member",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "cast member",
+      "PER"
+    ],
+    [
+      "MISC",
+      "chairperson",
+      "PER"
+    ],
+    [
+      "MISC",
+      "characters",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "characters",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "characters",
+      "PER"
+    ],
+    [
+      "MISC",
+      "child",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "child",
+      "PER"
+    ],
+    [
+      "MISC",
+      "composer",
+      "PER"
+    ],
+    [
+      "MISC",
+      "conflict",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "conflict",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "contains administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "continent",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "country",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "country",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "country",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "country of citizenship",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "country of origin",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "country of origin",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "country of origin",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "creator",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "creator",
+      "PER"
+    ],
+    [
+      "MISC",
+      "date of birth",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "date of death",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "developer",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "developer",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "developer",
+      "PER"
+    ],
+    [
+      "MISC",
+      "director",
+      "PER"
+    ],
+    [
+      "MISC",
+      "dissolved, abolished or demolished",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "end time",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "father",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "father",
+      "PER"
+    ],
+    [
+      "MISC",
+      "followed by",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "followed by",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "followed by",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "followed by",
+      "PER"
+    ],
+    [
+      "MISC",
+      "follows",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "follows",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "founded by",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "founded by",
+      "PER"
+    ],
+    [
+      "MISC",
+      "genre",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "genre",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "genre",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "has part",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "has part",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "has part",
+      "NUM"
+    ],
+    [
+      "MISC",
+      "has part",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "has part",
+      "PER"
+    ],
+    [
+      "MISC",
+      "has part",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "head of state",
+      "PER"
+    ],
+    [
+      "MISC",
+      "headquarters location",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "headquarters location",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "inception",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "influenced by",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "influenced by",
+      "PER"
+    ],
+    [
+      "MISC",
+      "instance of",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "instance of",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "languages spoken, written or signed",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "languages spoken, written or signed",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "league",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "legislative body",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "located in or next to body of water",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "located in the administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "located in the administrative territorial entity",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "located in the administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "located on terrain feature",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "location",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "location",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "location",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "location of formation",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "lyrics by",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "lyrics by",
+      "PER"
+    ],
+    [
+      "MISC",
+      "manufacturer",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "manufacturer",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "member of",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "member of political party",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "military branch",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "mother",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "narrative location",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "notable work",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "notable work",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "notable work",
+      "PER"
+    ],
+    [
+      "MISC",
+      "official language",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "official language",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "operator",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "operator",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "operator",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "original language of work",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "original language of work",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "original network",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "original network",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "original network",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "owned by",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "owned by",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "owned by",
+      "PER"
+    ],
+    [
+      "MISC",
+      "parent organization",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "parent organization",
+      "PER"
+    ],
+    [
+      "MISC",
+      "parent taxon",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "parent taxon",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "part of",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "part of",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "part of",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "part of",
+      "PER"
+    ],
+    [
+      "MISC",
+      "part of",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "participant",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "participant",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "participant",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "participant",
+      "PER"
+    ],
+    [
+      "MISC",
+      "participant of",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "participant of",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "performer",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "performer",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "performer",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "performer",
+      "PER"
+    ],
+    [
+      "MISC",
+      "place of birth",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "place of death",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "platform",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "platform",
+      "NUM"
+    ],
+    [
+      "MISC",
+      "platform",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "point in time",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "present in work",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "present in work",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "present in work",
+      "PER"
+    ],
+    [
+      "MISC",
+      "producer",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "producer",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "producer",
+      "PER"
+    ],
+    [
+      "MISC",
+      "production company",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "production company",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "production company",
+      "PER"
+    ],
+    [
+      "MISC",
+      "publication date",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "publisher",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "publisher",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "publisher",
+      "PER"
+    ],
+    [
+      "MISC",
+      "record label",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "record label",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "record label",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "record label",
+      "PER"
+    ],
+    [
+      "MISC",
+      "religion",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "replaced by",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "replaced by",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "replaces",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "replaces",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "screenwriter",
+      "PER"
+    ],
+    [
+      "MISC",
+      "series",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "series",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "series",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "series",
+      "PER"
+    ],
+    [
+      "MISC",
+      "sibling",
+      "PER"
+    ],
+    [
+      "MISC",
+      "spouse",
+      "PER"
+    ],
+    [
+      "MISC",
+      "start time",
+      "TIME"
+    ],
+    [
+      "MISC",
+      "subclass of",
+      "LOC"
+    ],
+    [
+      "MISC",
+      "subclass of",
+      "MISC"
+    ],
+    [
+      "MISC",
+      "subclass of",
+      "NUM"
+    ],
+    [
+      "MISC",
+      "subclass of",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "subsidiary",
+      "ORG"
+    ],
+    [
+      "MISC",
+      "work location",
+      "LOC"
+    ],
+    [
+      "NUM",
+      "composer",
+      "PER"
+    ],
+    [
+      "NUM",
+      "country",
+      "LOC"
+    ],
+    [
+      "NUM",
+      "date of birth",
+      "TIME"
+    ],
+    [
+      "NUM",
+      "date of death",
+      "TIME"
+    ],
+    [
+      "NUM",
+      "located in or next to body of water",
+      "LOC"
+    ],
+    [
+      "NUM",
+      "located on terrain feature",
+      "LOC"
+    ],
+    [
+      "NUM",
+      "member of sports team",
+      "LOC"
+    ],
+    [
+      "NUM",
+      "member of sports team",
+      "MISC"
+    ],
+    [
+      "NUM",
+      "member of sports team",
+      "ORG"
+    ],
+    [
+      "NUM",
+      "member of sports team",
+      "PER"
+    ],
+    [
+      "NUM",
+      "participant",
+      "PER"
+    ],
+    [
+      "NUM",
+      "series",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "applies to jurisdiction",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "applies to jurisdiction",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "applies to jurisdiction",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "author",
+      "PER"
+    ],
+    [
+      "ORG",
+      "award received",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "capital",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "capital of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "cast member",
+      "PER"
+    ],
+    [
+      "ORG",
+      "chairperson",
+      "PER"
+    ],
+    [
+      "ORG",
+      "child",
+      "PER"
+    ],
+    [
+      "ORG",
+      "conflict",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "conflict",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "contains administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "contains administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "continent",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "country",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "country",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "country",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "country of citizenship",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "creator",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "creator",
+      "PER"
+    ],
+    [
+      "ORG",
+      "date of birth",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "date of death",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "date of death",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "developer",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "director",
+      "PER"
+    ],
+    [
+      "ORG",
+      "dissolved, abolished or demolished",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "end time",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "ethnic group",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "father",
+      "PER"
+    ],
+    [
+      "ORG",
+      "followed by",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "follows",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "follows",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "follows",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "founded by",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "founded by",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "founded by",
+      "PER"
+    ],
+    [
+      "ORG",
+      "genre",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "genre",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "has part",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "has part",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "has part",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "has part",
+      "PER"
+    ],
+    [
+      "ORG",
+      "head of government",
+      "PER"
+    ],
+    [
+      "ORG",
+      "head of state",
+      "PER"
+    ],
+    [
+      "ORG",
+      "headquarters location",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "headquarters location",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "headquarters location",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "inception",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "influenced by",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "instance of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "instance of",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "instance of",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "league",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "league",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "league",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "legislative body",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "located in or next to body of water",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "located in the administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "located in the administrative territorial entity",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "located in the administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "located in the administrative territorial entity",
+      "PER"
+    ],
+    [
+      "ORG",
+      "located on terrain feature",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "location",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "location of formation",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "location of formation",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "location of formation",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "manufacturer",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "member of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "member of",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "member of",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "member of political party",
+      "PER"
+    ],
+    [
+      "ORG",
+      "member of sports team",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "military branch",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "military branch",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "mouth of the watercourse",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "narrative location",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "notable work",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "notable work",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "notable work",
+      "PER"
+    ],
+    [
+      "ORG",
+      "notable work",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "official language",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "official language",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "operator",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "operator",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "original network",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "original network",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "owned by",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "owned by",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "owned by",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "owned by",
+      "PER"
+    ],
+    [
+      "ORG",
+      "parent organization",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "parent organization",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "parent organization",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "parent organization",
+      "PER"
+    ],
+    [
+      "ORG",
+      "part of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "part of",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "part of",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "participant",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "participant",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "participant",
+      "PER"
+    ],
+    [
+      "ORG",
+      "participant of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "participant of",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "participant of",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "performer",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "performer",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "performer",
+      "PER"
+    ],
+    [
+      "ORG",
+      "platform",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "point in time",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "present in work",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "producer",
+      "PER"
+    ],
+    [
+      "ORG",
+      "product or material produced",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "product or material produced",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "production company",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "publication date",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "publisher",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "publisher",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "publisher",
+      "PER"
+    ],
+    [
+      "ORG",
+      "record label",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "record label",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "record label",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "record label",
+      "PER"
+    ],
+    [
+      "ORG",
+      "religion",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "religion",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "religion",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "replaced by",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "replaced by",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "replaced by",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "replaces",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "replaces",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "replaces",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "residence",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "separated from",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "series",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "sibling",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "spouse",
+      "PER"
+    ],
+    [
+      "ORG",
+      "start time",
+      "TIME"
+    ],
+    [
+      "ORG",
+      "subclass of",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "subclass of",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "subclass of",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "subsidiary",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "subsidiary",
+      "MISC"
+    ],
+    [
+      "ORG",
+      "subsidiary",
+      "ORG"
+    ],
+    [
+      "ORG",
+      "subsidiary",
+      "PER"
+    ],
+    [
+      "ORG",
+      "territory claimed by",
+      "LOC"
+    ],
+    [
+      "ORG",
+      "work location",
+      "LOC"
+    ],
+    [
+      "PER",
+      "applies to jurisdiction",
+      "LOC"
+    ],
+    [
+      "PER",
+      "applies to jurisdiction",
+      "MISC"
+    ],
+    [
+      "PER",
+      "applies to jurisdiction",
+      "ORG"
+    ],
+    [
+      "PER",
+      "author",
+      "PER"
+    ],
+    [
+      "PER",
+      "award received",
+      "MISC"
+    ],
+    [
+      "PER",
+      "award received",
+      "ORG"
+    ],
+    [
+      "PER",
+      "capital of",
+      "LOC"
+    ],
+    [
+      "PER",
+      "cast member",
+      "MISC"
+    ],
+    [
+      "PER",
+      "cast member",
+      "PER"
+    ],
+    [
+      "PER",
+      "characters",
+      "MISC"
+    ],
+    [
+      "PER",
+      "characters",
+      "PER"
+    ],
+    [
+      "PER",
+      "child",
+      "LOC"
+    ],
+    [
+      "PER",
+      "child",
+      "MISC"
+    ],
+    [
+      "PER",
+      "child",
+      "ORG"
+    ],
+    [
+      "PER",
+      "child",
+      "PER"
+    ],
+    [
+      "PER",
+      "composer",
+      "PER"
+    ],
+    [
+      "PER",
+      "conflict",
+      "LOC"
+    ],
+    [
+      "PER",
+      "conflict",
+      "MISC"
+    ],
+    [
+      "PER",
+      "conflict",
+      "ORG"
+    ],
+    [
+      "PER",
+      "contains administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "PER",
+      "continent",
+      "LOC"
+    ],
+    [
+      "PER",
+      "country",
+      "LOC"
+    ],
+    [
+      "PER",
+      "country of citizenship",
+      "LOC"
+    ],
+    [
+      "PER",
+      "country of citizenship",
+      "MISC"
+    ],
+    [
+      "PER",
+      "country of citizenship",
+      "ORG"
+    ],
+    [
+      "PER",
+      "country of citizenship",
+      "PER"
+    ],
+    [
+      "PER",
+      "country of origin",
+      "LOC"
+    ],
+    [
+      "PER",
+      "creator",
+      "ORG"
+    ],
+    [
+      "PER",
+      "creator",
+      "PER"
+    ],
+    [
+      "PER",
+      "date of birth",
+      "TIME"
+    ],
+    [
+      "PER",
+      "date of death",
+      "TIME"
+    ],
+    [
+      "PER",
+      "developer",
+      "ORG"
+    ],
+    [
+      "PER",
+      "director",
+      "PER"
+    ],
+    [
+      "PER",
+      "dissolved, abolished or demolished",
+      "TIME"
+    ],
+    [
+      "PER",
+      "educated at",
+      "LOC"
+    ],
+    [
+      "PER",
+      "educated at",
+      "ORG"
+    ],
+    [
+      "PER",
+      "educated at",
+      "PER"
+    ],
+    [
+      "PER",
+      "employer",
+      "LOC"
+    ],
+    [
+      "PER",
+      "employer",
+      "MISC"
+    ],
+    [
+      "PER",
+      "employer",
+      "ORG"
+    ],
+    [
+      "PER",
+      "ethnic group",
+      "LOC"
+    ],
+    [
+      "PER",
+      "ethnic group",
+      "MISC"
+    ],
+    [
+      "PER",
+      "ethnic group",
+      "ORG"
+    ],
+    [
+      "PER",
+      "father",
+      "LOC"
+    ],
+    [
+      "PER",
+      "father",
+      "MISC"
+    ],
+    [
+      "PER",
+      "father",
+      "ORG"
+    ],
+    [
+      "PER",
+      "father",
+      "PER"
+    ],
+    [
+      "PER",
+      "follows",
+      "MISC"
+    ],
+    [
+      "PER",
+      "founded by",
+      "MISC"
+    ],
+    [
+      "PER",
+      "founded by",
+      "PER"
+    ],
+    [
+      "PER",
+      "genre",
+      "LOC"
+    ],
+    [
+      "PER",
+      "genre",
+      "MISC"
+    ],
+    [
+      "PER",
+      "genre",
+      "ORG"
+    ],
+    [
+      "PER",
+      "genre",
+      "TIME"
+    ],
+    [
+      "PER",
+      "has part",
+      "LOC"
+    ],
+    [
+      "PER",
+      "has part",
+      "MISC"
+    ],
+    [
+      "PER",
+      "has part",
+      "PER"
+    ],
+    [
+      "PER",
+      "headquarters location",
+      "LOC"
+    ],
+    [
+      "PER",
+      "inception",
+      "TIME"
+    ],
+    [
+      "PER",
+      "influenced by",
+      "PER"
+    ],
+    [
+      "PER",
+      "instance of",
+      "ORG"
+    ],
+    [
+      "PER",
+      "languages spoken, written or signed",
+      "LOC"
+    ],
+    [
+      "PER",
+      "languages spoken, written or signed",
+      "MISC"
+    ],
+    [
+      "PER",
+      "languages spoken, written or signed",
+      "ORG"
+    ],
+    [
+      "PER",
+      "league",
+      "MISC"
+    ],
+    [
+      "PER",
+      "league",
+      "ORG"
+    ],
+    [
+      "PER",
+      "located in the administrative territorial entity",
+      "LOC"
+    ],
+    [
+      "PER",
+      "located in the administrative territorial entity",
+      "ORG"
+    ],
+    [
+      "PER",
+      "location of formation",
+      "LOC"
+    ],
+    [
+      "PER",
+      "manufacturer",
+      "ORG"
+    ],
+    [
+      "PER",
+      "member of",
+      "LOC"
+    ],
+    [
+      "PER",
+      "member of",
+      "MISC"
+    ],
+    [
+      "PER",
+      "member of",
+      "ORG"
+    ],
+    [
+      "PER",
+      "member of",
+      "PER"
+    ],
+    [
+      "PER",
+      "member of political party",
+      "LOC"
+    ],
+    [
+      "PER",
+      "member of political party",
+      "MISC"
+    ],
+    [
+      "PER",
+      "member of political party",
+      "ORG"
+    ],
+    [
+      "PER",
+      "member of political party",
+      "PER"
+    ],
+    [
+      "PER",
+      "member of sports team",
+      "LOC"
+    ],
+    [
+      "PER",
+      "member of sports team",
+      "MISC"
+    ],
+    [
+      "PER",
+      "member of sports team",
+      "ORG"
+    ],
+    [
+      "PER",
+      "member of sports team",
+      "PER"
+    ],
+    [
+      "PER",
+      "member of sports team",
+      "TIME"
+    ],
+    [
+      "PER",
+      "military branch",
+      "LOC"
+    ],
+    [
+      "PER",
+      "military branch",
+      "ORG"
+    ],
+    [
+      "PER",
+      "military branch",
+      "PER"
+    ],
+    [
+      "PER",
+      "mother",
+      "MISC"
+    ],
+    [
+      "PER",
+      "mother",
+      "PER"
+    ],
+    [
+      "PER",
+      "narrative location",
+      "LOC"
+    ],
+    [
+      "PER",
+      "notable work",
+      "LOC"
+    ],
+    [
+      "PER",
+      "notable work",
+      "MISC"
+    ],
+    [
+      "PER",
+      "notable work",
+      "NUM"
+    ],
+    [
+      "PER",
+      "notable work",
+      "ORG"
+    ],
+    [
+      "PER",
+      "notable work",
+      "PER"
+    ],
+    [
+      "PER",
+      "notable work",
+      "TIME"
+    ],
+    [
+      "PER",
+      "official language",
+      "LOC"
+    ],
+    [
+      "PER",
+      "operator",
+      "ORG"
+    ],
+    [
+      "PER",
+      "original language of work",
+      "LOC"
+    ],
+    [
+      "PER",
+      "original language of work",
+      "MISC"
+    ],
+    [
+      "PER",
+      "original network",
+      "MISC"
+    ],
+    [
+      "PER",
+      "original network",
+      "ORG"
+    ],
+    [
+      "PER",
+      "owned by",
+      "ORG"
+    ],
+    [
+      "PER",
+      "parent organization",
+      "ORG"
+    ],
+    [
+      "PER",
+      "part of",
+      "MISC"
+    ],
+    [
+      "PER",
+      "part of",
+      "ORG"
+    ],
+    [
+      "PER",
+      "part of",
+      "PER"
+    ],
+    [
+      "PER",
+      "participant of",
+      "LOC"
+    ],
+    [
+      "PER",
+      "participant of",
+      "MISC"
+    ],
+    [
+      "PER",
+      "participant of",
+      "NUM"
+    ],
+    [
+      "PER",
+      "participant of",
+      "ORG"
+    ],
+    [
+      "PER",
+      "performer",
+      "ORG"
+    ],
+    [
+      "PER",
+      "performer",
+      "PER"
+    ],
+    [
+      "PER",
+      "place of birth",
+      "LOC"
+    ],
+    [
+      "PER",
+      "place of birth",
+      "ORG"
+    ],
+    [
+      "PER",
+      "place of death",
+      "LOC"
+    ],
+    [
+      "PER",
+      "place of death",
+      "MISC"
+    ],
+    [
+      "PER",
+      "place of death",
+      "ORG"
+    ],
+    [
+      "PER",
+      "platform",
+      "MISC"
+    ],
+    [
+      "PER",
+      "point in time",
+      "TIME"
+    ],
+    [
+      "PER",
+      "position held",
+      "LOC"
+    ],
+    [
+      "PER",
+      "position held",
+      "MISC"
+    ],
+    [
+      "PER",
+      "position held",
+      "ORG"
+    ],
+    [
+      "PER",
+      "position held",
+      "PER"
+    ],
+    [
+      "PER",
+      "present in work",
+      "LOC"
+    ],
+    [
+      "PER",
+      "present in work",
+      "MISC"
+    ],
+    [
+      "PER",
+      "present in work",
+      "PER"
+    ],
+    [
+      "PER",
+      "present in work",
+      "TIME"
+    ],
+    [
+      "PER",
+      "producer",
+      "MISC"
+    ],
+    [
+      "PER",
+      "producer",
+      "PER"
+    ],
+    [
+      "PER",
+      "production company",
+      "MISC"
+    ],
+    [
+      "PER",
+      "production company",
+      "ORG"
+    ],
+    [
+      "PER",
+      "publication date",
+      "TIME"
+    ],
+    [
+      "PER",
+      "publisher",
+      "ORG"
+    ],
+    [
+      "PER",
+      "record label",
+      "MISC"
+    ],
+    [
+      "PER",
+      "record label",
+      "ORG"
+    ],
+    [
+      "PER",
+      "religion",
+      "LOC"
+    ],
+    [
+      "PER",
+      "religion",
+      "MISC"
+    ],
+    [
+      "PER",
+      "religion",
+      "ORG"
+    ],
+    [
+      "PER",
+      "residence",
+      "LOC"
+    ],
+    [
+      "PER",
+      "residence",
+      "ORG"
+    ],
+    [
+      "PER",
+      "screenwriter",
+      "PER"
+    ],
+    [
+      "PER",
+      "series",
+      "MISC"
+    ],
+    [
+      "PER",
+      "sibling",
+      "LOC"
+    ],
+    [
+      "PER",
+      "sibling",
+      "MISC"
+    ],
+    [
+      "PER",
+      "sibling",
+      "PER"
+    ],
+    [
+      "PER",
+      "spouse",
+      "LOC"
+    ],
+    [
+      "PER",
+      "spouse",
+      "MISC"
+    ],
+    [
+      "PER",
+      "spouse",
+      "ORG"
+    ],
+    [
+      "PER",
+      "spouse",
+      "PER"
+    ],
+    [
+      "PER",
+      "start time",
+      "TIME"
+    ],
+    [
+      "PER",
+      "subclass of",
+      "MISC"
+    ],
+    [
+      "PER",
+      "subsidiary",
+      "MISC"
+    ],
+    [
+      "PER",
+      "subsidiary",
+      "ORG"
+    ],
+    [
+      "PER",
+      "territory claimed by",
+      "LOC"
+    ],
+    [
+      "PER",
+      "work location",
+      "LOC"
+    ],
+    [
+      "PER",
+      "work location",
+      "ORG"
+    ],
+    [
+      "TIME",
+      "author",
+      "PER"
+    ],
+    [
+      "TIME",
+      "cast member",
+      "PER"
+    ],
+    [
+      "TIME",
+      "characters",
+      "PER"
+    ],
+    [
+      "TIME",
+      "country",
+      "LOC"
+    ],
+    [
+      "TIME",
+      "creator",
+      "PER"
+    ],
+    [
+      "TIME",
+      "end time",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "followed by",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "follows",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "genre",
+      "MISC"
+    ],
+    [
+      "TIME",
+      "has part",
+      "LOC"
+    ],
+    [
+      "TIME",
+      "has part",
+      "MISC"
+    ],
+    [
+      "TIME",
+      "has part",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "inception",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "part of",
+      "MISC"
+    ],
+    [
+      "TIME",
+      "part of",
+      "TIME"
+    ],
+    [
+      "TIME",
+      "participant",
+      "MISC"
+    ],
+    [
+      "TIME",
+      "performer",
+      "ORG"
+    ],
+    [
+      "TIME",
+      "start time",
+      "TIME"
+    ]
+  ]
+}

@@ -18,3 +18,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Benchmark dataset (29MB, re-clonable from upstream) and its large derived files.
+# The evaluation results stay in git: they are the evidence behind the report.
+data/benchmark/*
+!data/benchmark/eval_report_v*.json
+!data/benchmark/triplets_dev_v*.jsonl

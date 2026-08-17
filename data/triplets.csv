@@ -1,0 +1,40 @@
+﻿subject_type,subject,relation,object_type,object,evidence,source_file
+Budget,بودجه عمرانی ۱۴۰۳ - ۳ - ۱۷,FINANCES,Project,بهسازی پل صدر,ردیف بودجه عمرانی ۱۴۰۳ - ۳ - ۱۷ با مبلغ ۴۲۰ میلیارد ریال برای تأمین مالی پروژه بهسازی پل صدر تصویب شد.,data/raw/budget_allocations.txt
+Budget,بودجه حمل‌ونقل ۱۴۰۳ - ۷ - ۰۹,FINANCES,Project,تعریض خیابان شریعتی,ردیف بودجه حمل‌ونقل ۱۴۰۳ - ۷ - ۰۹ با اعتبار ۸۷۰ میلیارد ریال تأمین مالی پروژه تعریض خیابان شریعتی را بر عهده دارد.,data/raw/budget_allocations.txt
+Budget,بودجه بازآفرینی ۱۴۰۳ - ۲ - ۳۳,FINANCES,Project,بازآفرینی میدان صنعت,ردیف بودجه بازآفرینی ۱۴۰۳ - ۲ - ۳۳ با اعتبار ۳۱۵ میلیارد ریال برای پروژه بازآفرینی میدان صنعت اختصاص یافت.,data/raw/budget_allocations.txt
+Budget,بودجه فضای سبز ۱۴۰۳ - ۵ - ۴۱,FINANCES,Project,احداث پارک خطی رودخانه کن,ردیف بودجه فضای سبز ۱۴۰۳ - ۵ - ۴۱ با مبلغ ۲۶۰ میلیارد ریال برای تأمین مالی پروژه احداث پارک خطی رودخانه کن مصوب شد.,data/raw/budget_allocations.txt
+Budget,بودجه بازآفرینی ۱۴۰۳ - ۲ - ۵۸,FINANCES,Project,نوسازی بازار تجریش,ردیف بودجه بازآفرینی ۱۴۰۳ - ۲ - ۵۸ با اعتبار ۵۴۰ میلیارد ریال تأمین مالی پروژه نوسازی بازار تجریش را پوشش می‌دهد.,data/raw/budget_allocations.txt
+Project,بهسازی پل صدر,LOCATED_IN,Location,منطقه ۳,پروژه بهسازی پل صدر در منطقه ۳، پروژه تعریض خیابان شریعتی در منطقه ۷ و پروژه احداث پارک خطی رودخانه کن در منطقه ۵ اجرا می‌شوند.,data/raw/budget_allocations.txt
+Project,تعریض خیابان شریعتی,LOCATED_IN,Location,منطقه ۷,پروژه بهسازی پل صدر در منطقه ۳، پروژه تعریض خیابان شریعتی در منطقه ۷ و پروژه احداث پارک خطی رودخانه کن در منطقه ۵ اجرا می‌شوند.,data/raw/budget_allocations.txt
+Project,احداث پارک خطی رودخانه کن,LOCATED_IN,Location,منطقه ۵,پروژه بهسازی پل صدر در منطقه ۳، پروژه تعریض خیابان شریعتی در منطقه ۷ و پروژه احداث پارک خطی رودخانه کن در منطقه ۵ اجرا می‌شوند.,data/raw/budget_allocations.txt
+Complaint,شکایت شهروندان محله قیطریه,COMPLAINS_ABOUT,Project,بهسازی پل صدر,این شکایت درباره پروژه بهسازی پل صدر ثبت شد.,data/raw/complaints_137_municipality.txt
+Complaint,شکایت شهروندان منطقه ۷,COMPLAINS_ABOUT,Project,تعریض خیابان شریعتی,شکایت به پروژه تعریض خیابان شریعتی ارجاع شد.,data/raw/complaints_137_municipality.txt
+Complaint,شکایت شهروندان محله پونک,COMPLAINS_ABOUT,Location,پونک,این شکایت درباره محله پونک ثبت شد,data/raw/complaints_137_municipality.txt
+Complaint,شکایت ساکنان منطقه ۲,COMPLAINS_ABOUT,Project,بازآفرینی میدان صنعت,موضوع شکایت، پروژه بازآفرینی میدان صنعت است.,data/raw/complaints_137_municipality.txt
+Complaint,شکایت اهالی محله کن,COMPLAINS_ABOUT,Project,احداث پارک خطی رودخانه کن,این شکایت درباره پروژه احداث پارک خطی رودخانه کن ثبت شد.,data/raw/complaints_137_municipality.txt
+Complaint,شکایت کسبه محله تجریش,COMPLAINS_ABOUT,Project,نوسازی بازار تجریش,موضوع شکایت، پروژه نوسازی بازار تجریش است.,data/raw/complaints_137_municipality.txt
+Contractor,سازه‌پایدار البرز,EXECUTOR_OF,Project,احداث پارک خطی رودخانه کن,شهرداری منطقه ۵ تهران اجرای پروژه احداث پارک خطی رودخانه کن را به شرکت سازه‌پایدار البرز واگذار کرد.,data/raw/contract_kan_park.txt
+Project,احداث پارک خطی رودخانه کن,LOCATED_IN,Location,کن,این پروژه در محله کن و حاشیه رودخانه کن قرار دارد.,data/raw/contract_kan_park.txt
+Official,بهروز کاویانی,SUPERVISOR_OF,Project,احداث پارک خطی رودخانه کن,مهندس بهروز کاویانی به عنوان ناظر پروژه احداث پارک خطی رودخانه کن منصوب شد,data/raw/contract_kan_park.txt
+Budget,فضای سبز ۱۴۰۳ - ۵ - ۴۱,FINANCES,Project,احداث پارک خطی رودخانه کن,ردیف بودجه فضای سبز ۱۴۰۳ - ۵ - ۴۱ با مبلغ ۲۶۰ میلیارد ریال تأمین مالی پروژه احداث پارک خطی رودخانه کن را بر عهده دارد.,data/raw/contract_kan_park.txt
+Contractor,راه‌سازان آریا,EXECUTOR_OF,Project,بهسازی پل صدر,شهرداری منطقه ۳ تهران اجرای پروژه بهسازی پل صدر را به شرکت راه‌سازان آریا واگذار کرد.,data/raw/contract_sadr_bridge.txt
+Project,بهسازی پل صدر,LOCATED_IN,Location,قیطریه,این پروژه در محله قیطریه و محدوده بزرگراه صدر قرار دارد.,data/raw/contract_sadr_bridge.txt
+Project,بهسازی پل صدر,LOCATED_IN,Location,بزرگراه صدر,این پروژه در محله قیطریه و محدوده بزرگراه صدر قرار دارد.,data/raw/contract_sadr_bridge.txt
+Official,ناهید علوی,SUPERVISOR_OF,Project,بهسازی پل صدر,مهندس ناهید علوی به عنوان ناظر عالی پروژه معرفی شد و مسئولیت کنترل زمان‌بندی، کیفیت اجرا و تأیید صورت‌وضعیت‌ها را بر عهده دارد.,data/raw/contract_sadr_bridge.txt
+Budget,۱۴۰۳ - ۳ - ۱۷,FINANCES,Project,بهسازی پل صدر,ردیف بودجه عمرانی ۱۴۰۳ - ۳ - ۱۷ با مبلغ ۴۲۰ میلیارد ریال، تأمین مالی پروژه بهسازی پل صدر را پوشش می‌دهد.,data/raw/contract_sadr_bridge.txt
+Project,تعریض خیابان شریعتی,LOCATED_IN,Location,منطقه ۷ تهران,پروژه تعریض خیابان شریعتی در منطقه ۷ تهران و حدفاصل میدان قدس تا خیابان مطهری اجرا می‌شود.,data/raw/project_report_shariati_widening.txt
+Contractor,عمران‌گستر پایتخت,EXECUTOR_OF,Project,تعریض خیابان شریعتی,شرکت عمران‌گستر پایتخت به عنوان پیمانکار اجرایی پروژه معرفی‌شده است.,data/raw/project_report_shariati_widening.txt
+Official,کامران رضایی,SUPERVISOR_OF,Project,تعریض خیابان شریعتی,مهندس کامران رضایی، مدیر پروژه معاونت فنی و عمرانی، بر اجرای پروژه تعریض خیابان شریعتی نظارت می‌کند.,data/raw/project_report_shariati_widening.txt
+Budget,حمل‌ونقل ۱۴۰۳ - ۷ - ۰۹,FINANCES,Project,تعریض خیابان شریعتی,بودجه مصوب طرح با عنوان ردیف بودجه حمل‌ونقل ۱۴۰۳ - ۷ - ۰۹ و اعتبار ۸۷۰ میلیارد ریال برای تأمین مالی پروژه تعریض خیابان شریعتی اختصاص‌یافته است.,data/raw/project_report_shariati_widening.txt
+Project,نوسازی بازار تجریش,LOCATED_IN,Location,تجریش,پروژه نوسازی بازار تجریش در منطقه ۱ تهران و محله تجریش در حال اجراست.,data/raw/report_tajrish_bazaar.txt
+Project,نوسازی بازار تجریش,LOCATED_IN,Location,منطقه ۱,پروژه نوسازی بازار تجریش در منطقه ۱ تهران و محله تجریش در حال اجراست.,data/raw/report_tajrish_bazaar.txt
+Contractor,بازآفرینان کهن,EXECUTOR_OF,Project,نوسازی بازار تجریش,شرکت بازآفرینان کهن به عنوان پیمانکار اجرایی پروژه نوسازی بازار تجریش انتخاب‌شده است.,data/raw/report_tajrish_bazaar.txt
+Official,مهتاب صدقی,SUPERVISOR_OF,Project,نوسازی بازار تجریش,مهندس مهتاب صدقی به عنوان ناظر پروژه نوسازی بازار تجریش معرفی شد و مسئول هماهنگی با کسبه و کنترل مراحل اجراست.,data/raw/report_tajrish_bazaar.txt
+Budget,بازآفرینی ۱۴۰۳ - ۲ - ۵۸,FINANCES,Project,نوسازی بازار تجریش,ردیف بودجه بازآفرینی ۱۴۰۳ - ۲ - ۵۸ با اعتبار ۵۴۰ میلیارد ریال تأمین مالی پروژه نوسازی بازار تجریش را پوشش می‌دهد.,data/raw/report_tajrish_bazaar.txt
+Official,ناهید علوی,SUPERVISOR_OF,Project,بهسازی پل صدر,مهندس ناهید علوی تأکید کرد که نظارت عالی پروژه بهسازی پل صدر همچنان بر عهده اوست,data/raw/supervision_minutes.docx
+Contractor,شهرسازان نوین,EXECUTOR_OF,Project,بازآفرینی میدان صنعت,برای پروژه بازآفرینی میدان صنعت، شرکت شهرسازان نوین به عنوان مجری معرفی شد,data/raw/supervision_minutes.docx
+Project,بازآفرینی میدان صنعت,LOCATED_IN,Location,منطقه ۲ تهران,این پروژه در منطقه ۲ تهران و محله شهرک غرب اجرا می‌شود,data/raw/supervision_minutes.docx
+Project,بازآفرینی میدان صنعت,LOCATED_IN,Location,شهرک غرب,این پروژه در منطقه ۲ تهران و محله شهرک غرب اجرا می‌شود,data/raw/supervision_minutes.docx
+Official,سارا ملکی,SUPERVISOR_OF,Project,بازآفرینی میدان صنعت,مهندس سارا ملکی به عنوان ناظر پروژه بازآفرینی میدان صنعت منصوب شد,data/raw/supervision_minutes.docx
+Budget,بازآفرینی ۱۴۰۳ - ۲ - ۳۳,FINANCES,Project,بازآفرینی میدان صنعت,ردیف بودجه بازآفرینی ۱۴۰۳ - ۲ - ۳۳ با اعتبار ۳۱۵ میلیارد ریال برای تأمین مالی پروژه بازآفرینی میدان صنعت ثبت شد,data/raw/supervision_minutes.docx
+Official,مهتاب صدقی,SUPERVISOR_OF,Project,نوسازی بازار تجریش,پروژه نوسازی بازار تجریش زیر نظر مهندس مهتاب صدقی با هماهنگی کسبه پیش برود,data/raw/supervision_minutes.docx

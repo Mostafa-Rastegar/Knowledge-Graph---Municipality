@@ -73,6 +73,45 @@ SYSTEM_PROMPT = """تو یک استخراج‌کننده دانش برای اس�
 """
 
 
+def load_ontology(path: Path) -> None:
+    """Replace the hand-written municipality ontology with one defined in JSON.
+
+    The validation code, the evidence rule and the dedup logic stay the same;
+    only the schema changes. The Re-DocRED benchmark run uses this.
+    """
+    global ENTITY_TYPES, ALLOWED_RELATIONS, SYSTEM_PROMPT
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    ENTITY_TYPES = set(spec["entity_types"])
+    ALLOWED_RELATIONS = {tuple(item) for item in spec["allowed"]}
+    relations = "\n".join(f"- {name}" for name in sorted(set(spec["relations"].values())))
+    SYSTEM_PROMPT = (
+        "You are a document-level relation extraction system.\n"
+        "You get a document and the list of entities that appear in it.\n"
+        "Return every relation that the document states between two of those entities.\n\n"
+        f"Entity types: {', '.join(sorted(ENTITY_TYPES))}\n\n"
+        f"Allowed relations (use the exact name):\n{relations}\n\n"
+        "Rules:\n"
+        "- Be exhaustive. Check every pair of entities in the list, not only the\n"
+        "  pairs that appear in the same sentence. A document of this size normally\n"
+        "  holds 20 to 40 relations.\n"
+        "- Return a relation when the document states it, and also when the document\n"
+        "  makes it certain. Example: the text says a place is in a city, and says the\n"
+        "  city is in a country, so the place is in that country too.\n"
+        "- When the list holds a relation and its inverse, return both directions.\n"
+        "  Example: 'A located in the administrative territorial entity B' and\n"
+        "  'B contains administrative territorial entity A'.\n"
+        "- Copy each entity name exactly as it appears in the entity list.\n"
+        "- Relations are directed. Put the subject first.\n"
+        "- Give the sentence from the document that proves the relation as evidence.\n"
+        "  For an inferred relation, give the sentence that starts the chain.\n"
+        "- Ignore any relation that is not in the list.\n\n"
+        "Return only valid JSON with this structure:\n"
+        '{"triplets":[{"subject":{"type":"...","name":"..."},"predicate":"...",'
+        '"object":{"type":"...","name":"..."},"evidence":"..."}]}\n'
+        'If you find nothing: {"triplets":[]}'
+    )
+
+
 class Entity(BaseModel):
     type: str
     name: str
@@ -234,7 +273,13 @@ def main() -> None:
     parser.add_argument("chunks", nargs="?", default="data/processed/chunks.jsonl")
     parser.add_argument("--out", default="data/extracted/triplets.jsonl")
     parser.add_argument("--force", action="store_true", help="re-extract even cached chunks")
+    parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
     args = parser.parse_args()
+
+    if args.ontology:
+        load_ontology(Path(args.ontology))
+        log.info("ontology_loaded", path=args.ontology, entity_types=len(ENTITY_TYPES),
+                 allowed_relations=len(ALLOWED_RELATIONS))
 
     chunks_path = Path(args.chunks)
     if not chunks_path.exists():

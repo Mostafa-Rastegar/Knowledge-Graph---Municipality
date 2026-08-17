@@ -1,0 +1,56 @@
+{
+  "documents": 50,
+  "gold_triples": 1868,
+  "gold_triples_unseen": 1634,
+  "predicted_rows": 756,
+  "predicted_triples": 716,
+  "entity_unmatched": 37,
+  "precision": 36.45,
+  "recall": 13.97,
+  "f1": 20.2,
+  "ign_precision": 34.82,
+  "ign_recall": 14.81,
+  "ign_f1": 20.78,
+  "top_gold_relations": [
+    [
+      "located in the administrative territorial entity",
+      455
+    ],
+    [
+      "country",
+      351
+    ],
+    [
+      "contains administrative territorial entity",
+      115
+    ],
+    [
+      "country of citizenship",
+      90
+    ],
+    [
+      "notable work",
+      53
+    ],
+    [
+      "performer",
+      32
+    ],
+    [
+      "part of",
+      32
+    ],
+    [
+      "has part",
+      32
+    ],
+    [
+      "country of origin",
+      31
+    ],
+    [
+      "member of",
+      30
+    ]
+  ]
+}
