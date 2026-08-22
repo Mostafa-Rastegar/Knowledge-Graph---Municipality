@@ -1,16 +1,17 @@
 {
+  "entity_matching": "name_fallback",
   "documents": 50,
   "gold_triples": 1868,
-  "gold_triples_unseen": 1634,
+  "gold_triples_unseen": 1587,
   "predicted_rows": 1645,
   "predicted_triples": 1531,
   "entity_unmatched": 90,
   "precision": 32.92,
   "recall": 26.98,
   "f1": 29.66,
-  "ign_precision": 30.9,
-  "ign_recall": 27.97,
-  "ign_f1": 29.36,
+  "ign_precision": 30.56,
+  "ign_recall": 28.23,
+  "ign_f1": 29.35,
   "top_gold_relations": [
     [
       "located in the administrative territorial entity",
@@ -33,15 +34,15 @@
       53
     ],
     [
+      "has part",
+      32
+    ],
+    [
       "part of",
       32
     ],
     [
       "performer",
-      32
-    ],
-    [
-      "has part",
       32
     ],
     [
@@ -74,6 +75,10 @@
       "gold": 53,
       "recall": 3.8
     },
+    "has part": {
+      "gold": 32,
+      "recall": 15.6
+    },
     "part of": {
       "gold": 32,
       "recall": 15.6
@@ -81,10 +86,6 @@
     "performer": {
       "gold": 32,
       "recall": 12.5
-    },
-    "has part": {
-      "gold": 32,
-      "recall": 15.6
     },
     "country of origin": {
       "gold": 31,

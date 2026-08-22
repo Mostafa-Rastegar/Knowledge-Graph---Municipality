@@ -85,13 +85,21 @@ def build_ontology(train: list[dict], names: dict[str, str]) -> dict:
 
 
 def train_fact_keys(train: list[dict], names: dict[str, str]) -> set[str]:
-    """Surface-form facts seen in train, used by Ign F1."""
+    """Surface-form facts seen in train, used by Ign F1.
+
+    Every mention of an entity counts, not one chosen mention. An entity often
+    appears under several names, so keying on a single one lets a train fact
+    look unseen and earn Ign F1 credit it should not get.
+    """
     keys = set()
     for doc in train:
         for lab in doc["labels"]:
-            h = norm(doc["vertexSet"][lab["h"]][0]["name"])
-            t = norm(doc["vertexSet"][lab["t"]][0]["name"])
-            keys.add(f"{h}|{names[lab['r']]}|{t}")
+            heads = {norm(m["name"]) for m in doc["vertexSet"][lab["h"]]}
+            tails = {norm(m["name"]) for m in doc["vertexSet"][lab["t"]]}
+            rel = names[lab["r"]]
+            for h in heads:
+                for t in tails:
+                    keys.add(f"{h}|{rel}|{t}")
     return keys
 
 
@@ -369,18 +377,33 @@ def cmd_eval(args: argparse.Namespace) -> None:
         lookup_any[doc_id] = plain
 
     def resolve(doc_id: str, entity: dict) -> int | None:
+        """Map a predicted entity onto a gold entity index by its name.
+
+        The type-aware table comes first. The name-only fallback then accepts a
+        prediction whose type is wrong, which is more forgiving than the index
+        based scoring of the original benchmark. `--strict-types` turns the
+        fallback off, so the report can state both numbers.
+        """
         key = norm(entity["name"])
         hit = lookup[doc_id].get((key, entity.get("type", "")))
-        return hit if hit is not None else lookup_any[doc_id].get(key)
+        if hit is not None:
+            return hit
+        return None if args.strict_types else lookup_any[doc_id].get(key)
 
-    first_form = {
-        doc_id: {e["idx"]: e["forms"][0] for e in rec["entities"]}
+    # Every surface form of an entity, so the train check below matches the way
+    # train_fact_keys was built. One chosen form on either side would miss facts.
+    all_forms = {
+        doc_id: {e["idx"]: [norm(f) for f in e["forms"]] for e in rec["entities"]}
         for doc_id, rec in gold_docs.items()
     }
 
     def seen_in_train(fact: tuple[str, int, str, int]) -> bool:
         doc_id, h, rel, t = fact
-        return f"{norm(first_form[doc_id][h])}|{rel}|{norm(first_form[doc_id][t])}" in train_keys
+        return any(
+            f"{hf}|{rel}|{tf}" in train_keys
+            for hf in all_forms[doc_id][h]
+            for tf in all_forms[doc_id][t]
+        )
 
     gold_set: set[tuple[str, int, str, int]] = set()
     for doc_id, rec in gold_docs.items():
@@ -431,11 +454,13 @@ def cmd_eval(args: argparse.Namespace) -> None:
         Path(args.report).write_text(
             json.dumps(
                 {
+                    "entity_matching": "strict_types" if args.strict_types else "name_fallback",
                     "documents": len(gold_docs),
                     "gold_triples": len(gold_set),
                     "gold_triples_unseen": len(gold_ign),
                     "predicted_rows": total_pred,
                     "predicted_triples": len(pred_set),
+                    "predicted_triples_unseen": len(pred_ign),
                     "entity_unmatched": unmatched,
                     "precision": round(p, 2),
                     "recall": round(r, 2),
@@ -494,6 +519,8 @@ def main() -> None:
     ev.add_argument("pred")
     ev.add_argument("--gold", default=str(OUT / "gold_dev.jsonl"))
     ev.add_argument("--report", default=str(OUT / "eval_report.json"))
+    ev.add_argument("--strict-types", action="store_true",
+                    help="drop a prediction whose entity type does not match gold")
     ev.set_defaults(func=cmd_eval)
 
     args = parser.parse_args()

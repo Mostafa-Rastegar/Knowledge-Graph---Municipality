@@ -1,7 +1,8 @@
 {
+  "entity_matching": "name_fallback",
   "documents": 50,
   "gold_triples": 1868,
-  "gold_triples_unseen": 1634,
+  "gold_triples_unseen": 1587,
   "predicted_rows": 487,
   "predicted_triples": 466,
   "entity_unmatched": 21,
@@ -9,8 +10,8 @@
   "recall": 10.55,
   "f1": 16.88,
   "ign_precision": 42.37,
-  "ign_recall": 12.06,
-  "ign_f1": 18.77,
+  "ign_recall": 12.41,
+  "ign_f1": 19.2,
   "top_gold_relations": [
     [
       "located in the administrative territorial entity",

@@ -3,6 +3,7 @@
 Run: python -m tests.test_redocred
 """
 import argparse
+import collections
 import json
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from src import redocred
 
 GOLD = Path("data/benchmark/gold_dev.jsonl")
 TMP = Path("data/benchmark/_test_pred.jsonl")
+REPORT = Path("data/benchmark/_test_report.json")
 
 
 def gold_docs():
@@ -31,8 +33,9 @@ def pred_row(doc, tr, subject_name=None, object_name=None):
     }
 
 
-def run_eval(report=Path("data/benchmark/_test_report.json")):
-    redocred.cmd_eval(argparse.Namespace(pred=str(TMP), gold=str(GOLD), report=str(report)))
+def run_eval(report=REPORT):
+    redocred.cmd_eval(argparse.Namespace(pred=str(TMP), gold=str(GOLD),
+                                         report=str(report), strict_types=False))
     return json.loads(report.read_text(encoding="utf-8"))
 
 
@@ -54,6 +57,35 @@ def test_oracle_hits_the_matching_ceiling():
     assert rep["entity_unmatched"] == 0, rep
     print(f"ok test_oracle_hits_the_matching_ceiling "
           f"({len(docs)} docs, ceiling F1={rep['f1']})")
+
+
+def test_same_name_same_type_entities_are_the_ceiling():
+    """Name-based matching cannot separate two entities that look identical.
+
+    This is the reason the oracle scores 99.76 and not 100. The check builds
+    the collision directly instead of hoping the corpus contains one.
+    """
+    doc = {
+        "document_id": "d0",
+        "title": "t",
+        "entities": [
+            {"idx": 0, "type": "LOC", "forms": ["Springfield"]},
+            {"idx": 1, "type": "LOC", "forms": ["Springfield"]},
+            {"idx": 2, "type": "LOC", "forms": ["Illinois"]},
+        ],
+        "triples": [{"h": 1, "t": 2, "r": "P17", "r_name": "country"}],
+    }
+    gold = Path("data/benchmark/_test_collision_gold.jsonl")
+    gold.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+    write_pred([pred_row(doc, doc["triples"][0])])
+    redocred.cmd_eval(argparse.Namespace(pred=str(TMP), gold=str(gold),
+                                         report=str(REPORT), strict_types=False))
+    rep = json.loads(REPORT.read_text(encoding="utf-8"))
+    # The prediction names entity 1, but the lookup answers with entity 0.
+    assert rep["entity_unmatched"] == 0, rep
+    assert rep["recall"] == 0.0, rep
+    gold.unlink()
+    print("ok test_same_name_same_type_entities_are_the_ceiling")
 
 
 def test_half_recall():
@@ -88,13 +120,43 @@ def test_surface_form_variant_still_matches():
 
 
 def test_ign_drops_train_facts():
-    """Ign F1 must be computed over a smaller pool than plain F1."""
+    """A fact already present in train must leave BOTH pools, not one.
+
+    Dropping it from gold only would punish a correct prediction; dropping it
+    from predictions only would reward a miss. The check below takes a real
+    train fact and an unseen one, and predicts both.
+    """
     docs = gold_docs()
-    write_pred([pred_row(d, tr) for d in docs for tr in d["triples"]])
+    train_keys = set(json.loads((redocred.OUT / "train_fact_keys.json").read_text(encoding="utf-8")))
+
+    def key_of(doc, tr):
+        forms = {e["idx"]: e["forms"] for e in doc["entities"]}
+        return [
+            f"{redocred.norm(h)}|{tr['r_name']}|{redocred.norm(t)}"
+            for h in forms[tr["h"]] for t in forms[tr["t"]]
+        ]
+
+    seen = unseen = None
+    for d in docs:
+        for tr in d["triples"]:
+            hit = any(k in train_keys for k in key_of(d, tr))
+            if hit and seen is None:
+                seen = (d, tr)
+            elif not hit and unseen is None:
+                unseen = (d, tr)
+        if seen and unseen:
+            break
+    assert seen and unseen, "need one train-seen and one unseen gold fact"
+
+    write_pred([pred_row(seen[0], seen[1]), pred_row(unseen[0], unseen[1])])
     rep = run_eval()
+    assert rep["predicted_triples"] == 2, rep
+    # The train fact leaves BOTH pools. So the prediction pool loses exactly one
+    # entry, and precision stays 100 instead of counting the removal as a miss.
+    assert rep["predicted_triples_unseen"] == 1, rep
     assert rep["gold_triples_unseen"] < rep["gold_triples"], rep
-    assert rep["ign_f1"] >= 99.5, rep
-    print("ok test_ign_drops_train_facts")
+    assert rep["ign_precision"] == 100.0, rep
+    print("ok test_ign_drops_train_facts (train fact removed from both pools)")
 
 
 def test_closure_rules():
@@ -139,6 +201,14 @@ def test_closure_rules():
         if r.get("derived_by")
     ]
     assert all(r["evidence"] for r in derived), "every derived fact needs evidence"
+    # The counts matter, not only the presence. A rule that fires twice on this
+    # input would build a fact the three premises do not support.
+    fired = collections.Counter(r["derived_by"] for r in derived)
+    # Two of the three premise facts use LOCATED_IN, which has an inverse.
+    # The third uses COUNTRY, which has none, so R1 fires twice, not three times.
+    assert fired["R1_inverse"] == 2, fired
+    assert fired["R2_transitive"] == 1, fired
+    assert fired["R3_chain_country"] == 1, fired
     src.unlink()
     dst.unlink()
     print(f"ok test_closure_rules ({len(derived)} derived facts, all with evidence)")
@@ -147,6 +217,7 @@ def test_closure_rules():
 if __name__ == "__main__":
     for fn in [
         test_oracle_hits_the_matching_ceiling,
+        test_same_name_same_type_entities_are_the_ceiling,
         test_half_recall,
         test_unmatched_entity_is_dropped,
         test_surface_form_variant_still_matches,
@@ -155,5 +226,5 @@ if __name__ == "__main__":
     ]:
         fn()
     TMP.unlink(missing_ok=True)
-    Path("data/benchmark/_test_report.json").unlink(missing_ok=True)
+    REPORT.unlink(missing_ok=True)
     print("all passed")
