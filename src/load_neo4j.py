@@ -94,11 +94,13 @@ def load_record(session, rec: dict) -> bool:
     merge_entity(session, rec["subject"])
     merge_entity(session, rec["object"])
     session.run(cypher, sk=rec["subject"]["key"], ok=rec["object"]["key"])
-    # Evidence node tied to both endpoints, idempotent on fact_id.
+    # Evidence node tied to both endpoints, idempotent on fact_id. Both labels
+    # are named, so each MATCH uses the key constraint instead of reading every
+    # node in the graph. Without them a large graph slows to a crawl.
     session.run(
-        """
-        MATCH (s {key:$sk}), (o {key:$ok})
-        MERGE (e:Evidence {fact_id:$fid})
+        f"""
+        MATCH (s:{key[0]} {{key:$sk}}), (o:{key[2]} {{key:$ok}})
+        MERGE (e:Evidence {{fact_id:$fid}})
         SET e.text=$text, e.chunk_id=$chunk_id, e.source_path=$source_path, e.predicate=$predicate
         MERGE (s)-[:HAS_EVIDENCE]->(e)
         MERGE (o)-[:HAS_EVIDENCE]->(e)

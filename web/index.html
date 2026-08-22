@@ -52,8 +52,8 @@
   </aside>
 </main>
 <script>
-const GROUPS = {Project:'پروژه',Contractor:'پیمانکار',Location:'مکان',Official:'مسئول',Budget:'بودجه',Complaint:'شکایت'};
-const COLOR = {Project:'#4f8cff',Contractor:'#f7b955',Location:'#38c172',Official:'#c084fc',Budget:'#f25f5c',Complaint:'#e879a6'};
+const GROUPS = {Project:'پروژه',Contractor:'پیمانکار',Location:'مکان',Official:'مسئول',Budget:'بودجه',Complaint:'شکایت',LOC:'مکان (LOC)',PER:'شخص (PER)',ORG:'سازمان (ORG)',MISC:'سایر (MISC)',TIME:'زمان (TIME)',NUM:'عدد (NUM)'};
+const COLOR = {Project:'#4f8cff',Contractor:'#f7b955',Location:'#38c172',Official:'#c084fc',Budget:'#f25f5c',Complaint:'#e879a6',LOC:'#38c172',PER:'#c084fc',ORG:'#f7b955',MISC:'#4f8cff',TIME:'#e879a6',NUM:'#f25f5c'};
 const REL_FA = {EXECUTOR_OF:'مجریِ',LOCATED_IN:'واقع در',SUPERVISOR_OF:'ناظرِ',FINANCES:'تأمین مالیِ',COMPLAINS_ABOUT:'شکایت دربارهٔ'};
 
 let DATA = {nodes:[], edges:[]};
@@ -63,13 +63,17 @@ const $ = s => document.querySelector(s);
 function drawLegend(){
   $('#legend').innerHTML = Object.entries(GROUPS).map(([k,fa])=>{
     const c = DATA.nodes.filter(n=>n.group===k).length;
-    return `<span class="chip"><span class="dot" style="background:${COLOR[k]}"></span>${fa} (${c})</span>`;
+    return c ? `<span class="chip"><span class="dot" style="background:${COLOR[k]}"></span>${fa} (${c})</span>` : '';
   }).join('');
 }
 
 async function load(){
   $('#status').textContent = 'در حال بارگذاری گراف…';
-  const r = await fetch('/api/graph'); DATA = await r.json();
+  // ?doc=<id> in the page address shows one document's graph. The database
+  // holds two graphs, so the whole graph at once is unreadable.
+  const doc = new URLSearchParams(location.search).get('doc') || '';
+  const r = await fetch('/api/graph' + (doc ? '?doc=' + encodeURIComponent(doc) : ''));
+  DATA = await r.json();
   nodesDS = new vis.DataSet(DATA.nodes.map(n=>({
     id:n.id, label:n.label, group:n.group,
     color:{background:COLOR[n.group],border:'#0008',highlight:{background:COLOR[n.group],border:'#fff'}},
@@ -92,7 +96,7 @@ async function load(){
 
 function showNode(id){
   const node = DATA.nodes.find(n=>n.id===id);
-  $('#panelTitle').textContent = `${GROUPS[node.group]}: ${node.label}`;
+  $('#panelTitle').textContent = `${GROUPS[node.group] || node.group}: ${node.label}`;
   const name = k => (DATA.nodes.find(n=>n.id===k)||{}).label || k;
   const facts = [];
   DATA.edges.forEach(e=>{

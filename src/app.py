@@ -84,26 +84,44 @@ async def upload(file: UploadFile) -> JSONResponse:
 
 
 @app.get("/api/graph")
-def graph() -> dict:
+def graph(doc: str = "") -> dict:
+    """The whole graph, or one document's graph when `doc` is given.
+
+    The database holds the municipality graph and the English benchmark graph
+    side by side. Drawing every node at once is unreadable, so `doc` limits the
+    answer to the facts whose evidence came from that document.
+    """
     driver = _driver()
     db = os.environ.get("NEO4J_DATABASE", "").strip() or None
     nodes, edges = [], []
     try:
         with driver.session(database=db) as s:
-            for r in s.run(
+            node_query = (
+                "MATCH (n)-[:HAS_EVIDENCE]->(e:Evidence) "
+                "WHERE NOT n:Evidence AND e.chunk_id STARTS WITH $doc "
+                "RETURN DISTINCT n.key AS id, n.name AS name, labels(n)[0] AS type"
+            ) if doc else (
                 "MATCH (n) WHERE NOT n:Evidence "
                 "RETURN n.key AS id, n.name AS name, labels(n)[0] AS type"
-            ):
+            )
+            for r in s.run(node_query, doc=doc):
                 nodes.append({
                     "id": r["id"], "label": r["name"],
                     "group": r["type"], "groupFa": GROUP_FA.get(r["type"], r["type"]),
                 })
-            for r in s.run(
+            edge_query = (
+                "MATCH (a)-[rel]->(b) WHERE type(rel) <> 'HAS_EVIDENCE' "
+                "MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
+                "WHERE e.chunk_id STARTS WITH $doc "
+                "RETURN a.key AS src, type(rel) AS type, b.key AS dst, "
+                "collect(e.text)[0] AS evidence"
+            ) if doc else (
                 "MATCH (a)-[rel]->(b) WHERE type(rel) <> 'HAS_EVIDENCE' "
                 "OPTIONAL MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
                 "RETURN a.key AS src, type(rel) AS type, b.key AS dst, "
                 "collect(e.text)[0] AS evidence"
-            ):
+            )
+            for r in s.run(edge_query, doc=doc):
                 edges.append({
                     "from": r["src"], "to": r["dst"],
                     "label": r["type"], "evidence": r["evidence"] or "",
