@@ -5,7 +5,8 @@ param(
     [switch]$Distant,
     [switch]$Pdf,
     [int]$Limit = 50,
-    [int]$Workers = 48
+    [int]$Workers = 8,
+    [string]$Tag = "claude"
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,8 +23,10 @@ function Consensus($a, $b, $out) {
 
 if ($DocRED) {
     $D = "data/benchmark/docred"
+    $R = "$D/$Tag"
     $O = "configs/ontology_redocred.json"
     $F = "configs/fewshot_redocred.json"
+    New-Item -ItemType Directory -Force $R | Out-Null
 
     Step "0/5 prepare DocRED splits and the Re-DocRED test split"
     python -m src.docred prepare
@@ -31,35 +34,35 @@ if ($DocRED) {
 
     foreach ($split in @("validation", "test", "train_annotated")) {
         Step "$split pass A (no examples)"
-        python -m src.extract $D/chunks_$split.jsonl --out $D/triplets_${split}_a.jsonl --ontology $O --workers $Workers
+        python -m src.extract $D/chunks_$split.jsonl --out $R/triplets_${split}_a.jsonl --ontology $O --workers $Workers
         Step "$split pass B (two examples)"
-        python -m src.extract $D/chunks_$split.jsonl --out $D/triplets_${split}_b.jsonl --ontology $O --fewshot $F --workers $Workers
+        python -m src.extract $D/chunks_$split.jsonl --out $R/triplets_${split}_b.jsonl --ontology $O --fewshot $F --workers $Workers
         Step "$split consensus + closure"
-        Consensus $D/triplets_${split}_a.jsonl $D/triplets_${split}_b.jsonl $D/triplets_$split.jsonl
+        Consensus $R/triplets_${split}_a.jsonl $R/triplets_${split}_b.jsonl $R/triplets_$split.jsonl
         if ($split -ne "test") {
             Step "$split evaluate"
-            python -m src.redocred eval $D/triplets_$split.jsonl --gold $D/gold_$split.jsonl --report $D/eval_report_$split.json
+            python -m src.redocred eval $R/triplets_$split.jsonl --gold $D/gold_$split.jsonl --report $R/eval_report_$split.json
         }
     }
 
     Step "Re-DocRED test pass A"
-    python -m src.extract data/benchmark/chunks_test.jsonl --out data/benchmark/triplets_test_a.jsonl --ontology $O --workers $Workers
+    python -m src.extract data/benchmark/chunks_test.jsonl --out $R/triplets_redocred_test_a.jsonl --ontology $O --workers $Workers
     Step "Re-DocRED test pass B"
-    python -m src.extract data/benchmark/chunks_test.jsonl --out data/benchmark/triplets_test_b.jsonl --ontology $O --fewshot $F --workers $Workers
-    Consensus data/benchmark/triplets_test_a.jsonl data/benchmark/triplets_test_b.jsonl data/benchmark/triplets_test.jsonl
-    python -m src.redocred eval data/benchmark/triplets_test.jsonl --gold data/benchmark/gold_test.jsonl --report data/benchmark/eval_report_test.json
+    python -m src.extract data/benchmark/chunks_test.jsonl --out $R/triplets_redocred_test_b.jsonl --ontology $O --fewshot $F --workers $Workers
+    Consensus $R/triplets_redocred_test_a.jsonl $R/triplets_redocred_test_b.jsonl $R/triplets_redocred_test.jsonl
+    python -m src.redocred eval $R/triplets_redocred_test.jsonl --gold data/benchmark/gold_test.jsonl --report $R/eval_report_redocred_test.json
 
     Step "train_distant pass A (101,873 documents)"
-    python -m src.extract $D/chunks_train_distant.jsonl --out $D/triplets_train_distant_a.jsonl --ontology $O --workers $Workers
+    python -m src.extract $D/chunks_train_distant.jsonl --out $R/triplets_train_distant_a.jsonl --ontology $O --workers $Workers
     if ($Distant) {
         Step "train_distant pass B"
-        python -m src.extract $D/chunks_train_distant.jsonl --out $D/triplets_train_distant_b.jsonl --ontology $O --fewshot $F --workers $Workers
-        Consensus $D/triplets_train_distant_a.jsonl $D/triplets_train_distant_b.jsonl $D/triplets_train_distant.jsonl
+        python -m src.extract $D/chunks_train_distant.jsonl --out $R/triplets_train_distant_b.jsonl --ontology $O --fewshot $F --workers $Workers
+        Consensus $R/triplets_train_distant_a.jsonl $R/triplets_train_distant_b.jsonl $R/triplets_train_distant.jsonl
     } else {
-        python -m src.redocred closure $D/triplets_train_distant_a.jsonl --out $D/triplets_train_distant.jsonl
+        python -m src.redocred closure $R/triplets_train_distant_a.jsonl --out $R/triplets_train_distant.jsonl
     }
     Step "train_distant agreement with the distant labels"
-    python -m src.redocred eval $D/triplets_train_distant.jsonl --gold $D/gold_train_distant.jsonl --report $D/eval_report_train_distant.json
+    python -m src.redocred eval $R/triplets_train_distant.jsonl --gold $D/gold_train_distant.jsonl --report $R/eval_report_train_distant.json
 }
 elseif ($Full) {
     Step "1/4 pass A of 500 documents (no examples in the prompt)"

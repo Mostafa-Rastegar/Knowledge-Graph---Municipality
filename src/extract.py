@@ -5,6 +5,9 @@ import hashlib
 import json
 import os
 import re as _re
+import shutil
+import subprocess
+import tempfile
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -209,9 +212,77 @@ def _wait_for_slot() -> None:
         time.sleep(delay)
 
 
+PROVIDER = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
+_prompt_file = [None]
+
+
+def _claude_exe() -> str:
+    exe = os.environ.get("CLAUDE_CLI", "").strip()
+    if exe:
+        return exe
+    found = shutil.which("claude")
+    if found:
+        native = Path(found).parent / "node_modules" / "@anthropic-ai" / "claude-code" / "bin" / "claude.exe"
+        if native.exists():
+            return str(native)
+        return found
+    raise SystemExit("claude CLI not found. Install Claude Code or set CLAUDE_CLI in .env.")
+
+
+def _claude_prompt_file() -> str:
+    if _prompt_file[0] is None:
+        fh = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8")
+        fh.write(SYSTEM_PROMPT)
+        fh.close()
+        _prompt_file[0] = fh.name
+    return _prompt_file[0]
+
+
+def call_claude_cli(text: str) -> str:
+    cmd = [
+        _claude_exe(), "-p",
+        "--model", os.environ.get("CLAUDE_MODEL", "sonnet"),
+        "--tools", "",
+        "--output-format", "json",
+        "--no-session-persistence",
+        "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
+        "--setting-sources", "",
+        "--disable-slash-commands",
+        "--system-prompt-file", _claude_prompt_file(),
+    ]
+    effort = os.environ.get("CLAUDE_EFFORT", "").strip()
+    if effort:
+        cmd += ["--effort", effort]
+    proc = subprocess.run(
+        cmd, input=text, capture_output=True, text=True, encoding="utf-8",
+        timeout=float(os.environ.get("LLM_TIMEOUT", "180")),
+    )
+    line = next((l for l in proc.stdout.splitlines() if l.startswith("{")), "")
+    if proc.returncode != 0 or not line:
+        raise RuntimeError(f"claude exit {proc.returncode}: {(proc.stderr or proc.stdout)[-300:]}")
+    data = json.loads(line)
+    if data.get("is_error"):
+        raise RuntimeError(f"claude error: {str(data.get('result'))[:300]}")
+    usage = data.get("usage", {})
+    with _usage_lock:
+        USAGE["prompt_tokens"] += (usage.get("input_tokens") or 0) + (usage.get("cache_creation_input_tokens") or 0) + (usage.get("cache_read_input_tokens") or 0)
+        USAGE["cached_tokens"] += usage.get("cache_read_input_tokens") or 0
+        USAGE["completion_tokens"] += usage.get("output_tokens") or 0
+        USAGE["calls"] += 1
+    result = data.get("result") or ""
+    start, end = result.find("{"), result.rfind("}")
+    if start < 0 or end < 0:
+        raise RuntimeError(f"claude answer is not json: {result[:200]}")
+    result = result[start:end + 1]
+    json.loads(result)
+    return result
+
+
 @retry(stop=stop_after_attempt(8), wait=wait_exponential(multiplier=1, min=2, max=60))
-def call_llm(client: OpenAI, text: str) -> str:
+def call_llm(client: Optional[OpenAI], text: str) -> str:
     _wait_for_slot()
+    if PROVIDER == "claude-cli":
+        return call_claude_cli(text)
     resp = client.chat.completions.create(
         model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
         temperature=float(os.environ.get("LLM_TEMPERATURE", "0")),
@@ -368,7 +439,10 @@ def main() -> None:
                 todo.append(chunk)
         log.info("plan", total=len(chunks), cached=chunks_cached, todo=len(todo), workers=args.workers)
 
-        client: Optional[OpenAI] = client_from_env() if todo else None
+        client: Optional[OpenAI] = client_from_env() if todo and PROVIDER != "claude-cli" else None
+        if todo:
+            log.info("provider", provider=PROVIDER,
+                     model=os.environ.get("CLAUDE_MODEL", "sonnet") if PROVIDER == "claude-cli" else os.environ.get("LLM_MODEL", ""))
 
         def work(chunk: dict):
             try:
