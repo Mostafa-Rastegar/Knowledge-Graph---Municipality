@@ -21,7 +21,7 @@ from pydantic import BaseModel, ValidationError, field_validator
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 log = structlog.get_logger()
-load_dotenv()
+load_dotenv(override=True)
 
 ENTITY_TYPES = {"Project", "Contractor", "Location", "Official", "Budget", "Complaint"}
 
@@ -250,7 +250,7 @@ def call_claude_cli(text: str) -> str:
         "--disable-slash-commands",
         "--system-prompt-file", _claude_prompt_file(),
     ]
-    effort = os.environ.get("CLAUDE_EFFORT", "").strip()
+    effort = os.environ.get("LLM_EFFORT", "").strip()
     if effort:
         cmd += ["--effort", effort]
     proc = subprocess.run(
