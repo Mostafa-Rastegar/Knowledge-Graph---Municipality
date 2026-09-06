@@ -192,8 +192,26 @@ def _count_usage(resp) -> None:
         USAGE["calls"] += 1
 
 
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=2, max=60))
+_rate_lock = threading.Lock()
+_next_slot = [0.0]
+
+
+def _wait_for_slot() -> None:
+    rps = float(os.environ.get("LLM_RPS", "0"))
+    if rps <= 0:
+        return
+    with _rate_lock:
+        now = time.monotonic()
+        start = max(now, _next_slot[0])
+        _next_slot[0] = start + 1.0 / rps
+    delay = start - now
+    if delay > 0:
+        time.sleep(delay)
+
+
+@retry(stop=stop_after_attempt(8), wait=wait_exponential(multiplier=1, min=2, max=60))
 def call_llm(client: OpenAI, text: str) -> str:
+    _wait_for_slot()
     resp = client.chat.completions.create(
         model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
         temperature=float(os.environ.get("LLM_TEMPERATURE", "0")),
