@@ -1,21 +1,3 @@
-"""Phase 2: run the municipality KG pipeline on the Re-DocRED benchmark.
-
-CLI:
-  python -m src.redocred prepare --limit 50
-  python -m src.redocred eval data/benchmark/triplets_dev.jsonl
-
-`prepare` turns Re-DocRED documents into the same chunk format that
-`src.extract` already reads, and derives the ontology (entity types, 96
-relations, allowed type-relation-type combinations) from the train split.
-
-`eval` maps the extracted triplets back onto the gold entity indices and
-reports Precision / Recall / F1 and Ign F1 (the DocRED metric that drops
-facts already seen in the train split, so memorisation earns no score).
-
-Task setup: we follow the standard document-level relation extraction setup.
-The entity list of each document is given to the model; the model predicts
-which relations hold between them and quotes the evidence sentence.
-"""
 from __future__ import annotations
 
 import argparse
@@ -40,7 +22,6 @@ def rel_names() -> dict[str, str]:
 
 
 def norm(text: str) -> str:
-    """Loose surface-form key: case, punctuation and spacing do not matter."""
     text = unicodedata.normalize("NFKC", text).lower()
     text = re.sub(r"[^\w\s]", " ", text)
     return " ".join(text.split())
@@ -51,7 +32,6 @@ def doc_text(doc: dict) -> str:
 
 
 def entity_block(doc: dict) -> str:
-    """The entity list handed to the model, one line per entity."""
     lines = []
     for ent in doc["vertexSet"]:
         forms = sorted({m["name"] for m in ent})
@@ -60,11 +40,6 @@ def entity_block(doc: dict) -> str:
 
 
 def build_ontology(train: list[dict], names: dict[str, str]) -> dict:
-    """Allowed (subject_type, relation, object_type) triples, learned from train.
-
-    This is the same strict-ontology filter the municipality pipeline uses; here
-    the ontology is derived from data instead of written by hand.
-    """
     allowed = set()
     for doc in train:
         for lab in doc["labels"]:
@@ -85,12 +60,6 @@ def build_ontology(train: list[dict], names: dict[str, str]) -> dict:
 
 
 def train_fact_keys(train: list[dict], names: dict[str, str]) -> set[str]:
-    """Surface-form facts seen in train, used by Ign F1.
-
-    Every mention of an entity counts, not one chosen mention. An entity often
-    appears under several names, so keying on a single one lets a train fact
-    look unseen and earn Ign F1 credit it should not get.
-    """
     keys = set()
     for doc in train:
         for lab in doc["labels"]:
@@ -159,16 +128,10 @@ def cmd_prepare(args: argparse.Namespace) -> None:
 
 
 def cmd_fewshot(args: argparse.Namespace) -> None:
-    """Build worked examples for the prompt, taken only from the train split.
-
-    The examples never come from the split we score on, so the measurement
-    stays honest. We pick short documents that hold many relations, because
-    they show the model the density we expect without a long prompt.
-    """
     names = rel_names()
     train = load_split("train")
-    # A typical dev document holds about 37 relations. We keep the examples near
-    # that number, so the model learns the real density and the prompt stays short.
+
+
     ranked = sorted(
         (d for d in train if 100 <= len(doc_text(d).split()) <= 200 and 25 <= len(d["labels"]) <= 40),
         key=lambda d: -len({names[l["r"]] for l in d["labels"]}),
@@ -208,11 +171,6 @@ def cmd_fewshot(args: argparse.Namespace) -> None:
 
 
 def cmd_graph(args: argparse.Namespace) -> None:
-    """Print one document's extracted graph as a Mermaid diagram.
-
-    The report needs a picture of the English graph. Mermaid renders in the
-    report itself, so this needs no database and no browser.
-    """
     rows = [
         json.loads(line)
         for line in Path(args.pred).read_text(encoding="utf-8").splitlines()
@@ -249,236 +207,216 @@ LOCATED_IN = "located in the administrative territorial entity"
 CONTAINS = "contains administrative territorial entity"
 COUNTRY = "country"
 
-# Relations that always hold in both directions, under two different names.
+
+_DOC_ID = re.compile(rb'"document_id":\s*"([^"]+)"')
+
 INVERSE = {LOCATED_IN: CONTAINS, CONTAINS: LOCATED_IN, "part of": "has part", "has part": "part of"}
 
 
-def cmd_closure(args: argparse.Namespace) -> None:
-    """Add the facts that follow from the extracted ones by ontology rules.
+def doc_offsets(path: Path) -> dict[str, list[int]]:
+    offsets: dict[str, list[int]] = {}
+    with Path(path).open("rb") as fh:
+        pos = 0
+        for raw in fh:
+            if raw.strip():
+                head = raw[: raw.find(b'"document_id"') + 200] if b'"document_id"' in raw else raw
+                m = _DOC_ID.search(head)
+                doc_id = m.group(1).decode("utf-8") if m else json.loads(raw.decode("utf-8-sig"))["document_id"]
+                offsets.setdefault(doc_id, []).append(pos)
+            pos += len(raw)
+    return offsets
 
-    The language model reports what a sentence says. A knowledge graph also holds
-    what the graph implies. Three rules run here:
-      R1  inverse      A located in B            -> B contains A
-      R2  transitive   A located in B, B in C    -> A located in C
-      R3  chain        A located in B, B country C -> A country C
-    Every derived fact keeps the evidence of the facts it came from.
-    """
-    rows = [
-        json.loads(line)
-        for line in Path(args.pred).read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    by_doc: dict[str, list[dict]] = collections.defaultdict(list)
-    for row in rows:
-        by_doc[row["document_id"]].append(row)
 
-    out: list[dict] = []
-    added = collections.Counter()
-    for doc_id, doc_rows in by_doc.items():
-        facts = {(r["subject"]["name"], r["predicate"], r["object"]["name"]): r for r in doc_rows}
-        types = {}
-        evidence = {}
-        for r in doc_rows:
-            types[r["subject"]["name"]] = r["subject"]["type"]
-            types[r["object"]["name"]] = r["object"]["type"]
-            evidence[(r["subject"]["name"], r["predicate"], r["object"]["name"])] = r["evidence"]
+def grouped_rows(path: Path):
+    offsets = doc_offsets(path)
+    with Path(path).open("rb") as fh:
+        for doc_id, positions in offsets.items():
+            rows = []
+            for pos in positions:
+                fh.seek(pos)
+                rows.append(json.loads(fh.readline().decode("utf-8-sig")))
+            yield doc_id, rows
 
-        def node_key(name: str) -> str:
-            """The key format of src/extract.py: type, then the collapsed name."""
-            return f"{types.get(name, 'MISC')}:{' '.join(name.split())}"
 
-        def add(subject: str, predicate: str, obj: str, why: list[str], rule: str) -> bool:
-            key = (subject, predicate, obj)
-            if key in facts or subject == obj:
-                return False
-            facts[key] = {
-                "fact_id": "fact_" + hashlib.sha1(
-                    f"{doc_id}|{subject}|{predicate}|{obj}".encode("utf-8")
-                ).hexdigest()[:12],
-                "chunk_id": f"{doc_id}_c0",
-                "document_id": doc_id,
-                "source_path": rule,
-                # The same key format the extractor uses, so the graph loader
-                # merges a derived fact onto the node an extracted fact created.
-                "subject": {"type": types.get(subject, "MISC"), "name": subject,
-                            "key": node_key(subject)},
-                "predicate": predicate,
-                "object": {"type": types.get(obj, "MISC"), "name": obj,
-                           "key": node_key(obj)},
-                "evidence": " | ".join(w for w in why if w)[:600],
-                "derived_by": rule,
-            }
-            added[rule] += 1
-            return True
+def close_doc(doc_id: str, doc_rows: list[dict], added: collections.Counter) -> list[dict]:
+    facts = {(r["subject"]["name"], r["predicate"], r["object"]["name"]): r for r in doc_rows}
+    types = {}
+    evidence = {}
+    for r in doc_rows:
+        types[r["subject"]["name"]] = r["subject"]["type"]
+        types[r["object"]["name"]] = r["object"]["type"]
+        evidence[(r["subject"]["name"], r["predicate"], r["object"]["name"])] = r["evidence"]
 
-        # R1 inverse
-        for (s, p, o), rec in list(facts.items()):
-            if p in INVERSE:
-                add(o, INVERSE[p], s, [rec["evidence"]], "R1_inverse")
+    def node_key(name: str) -> str:
+        return f"{types.get(name, 'MISC')}:{' '.join(name.split())}"
 
-        # R2 transitive closure of located_in (repeat until nothing new appears)
-        for _ in range(4):
-            chain = [(s, o) for (s, p, o) in list(facts) if p == LOCATED_IN]
-            grew = False
-            for a, b in chain:
-                for c, d in chain:
-                    if b == c:
-                        grew |= add(
-                            a,
-                            LOCATED_IN,
-                            d,
-                            [evidence.get((a, LOCATED_IN, b), ""), evidence.get((c, LOCATED_IN, d), "")],
-                            "R2_transitive",
-                        )
-            if not grew:
-                break
+    def add(subject: str, predicate: str, obj: str, why: list[str], rule: str) -> bool:
+        key = (subject, predicate, obj)
+        if key in facts or subject == obj:
+            return False
+        facts[key] = {
+            "fact_id": "fact_" + hashlib.sha1(
+                f"{doc_id}|{subject}|{predicate}|{obj}".encode("utf-8")
+            ).hexdigest()[:12],
+            "chunk_id": f"{doc_id}_c0",
+            "document_id": doc_id,
+            "source_path": rule,
+            "subject": {"type": types.get(subject, "MISC"), "name": subject, "key": node_key(subject)},
+            "predicate": predicate,
+            "object": {"type": types.get(obj, "MISC"), "name": obj, "key": node_key(obj)},
+            "evidence": " | ".join(w for w in why if w)[:600],
+            "derived_by": rule,
+        }
+        added[rule] += 1
+        return True
 
-        # R3 located_in + country -> country
-        countries = [(s, o) for (s, p, o) in list(facts) if p == COUNTRY]
-        for a, b in [(s, o) for (s, p, o) in list(facts) if p == LOCATED_IN]:
-            for c, d in countries:
+    for (s, p, o), rec in list(facts.items()):
+        if p in INVERSE:
+            add(o, INVERSE[p], s, [rec["evidence"]], "R1_inverse")
+
+    for _ in range(4):
+        chain = [(s, o) for (s, p, o) in list(facts) if p == LOCATED_IN]
+        grew = False
+        for a, b in chain:
+            for c, d in chain:
                 if b == c:
-                    add(a, COUNTRY, d, [evidence.get((a, LOCATED_IN, b), "")], "R3_chain_country")
+                    grew |= add(
+                        a, LOCATED_IN, d,
+                        [evidence.get((a, LOCATED_IN, b), ""), evidence.get((c, LOCATED_IN, d), "")],
+                        "R2_transitive",
+                    )
+        if not grew:
+            break
 
-        out.extend(facts.values())
+    countries = [(s, o) for (s, p, o) in list(facts) if p == COUNTRY]
+    for a, b in [(s, o) for (s, p, o) in list(facts) if p == LOCATED_IN]:
+        for c, d in countries:
+            if b == c:
+                add(a, COUNTRY, d, [evidence.get((a, LOCATED_IN, b), "")], "R3_chain_country")
+    return list(facts.values())
 
-    Path(args.out).write_text(
-        "\n".join(json.dumps(r, ensure_ascii=False) for r in out) + "\n", encoding="utf-8"
-    )
-    print(f"input rows {len(rows)} -> output rows {len(out)}")
+
+def cmd_closure(args: argparse.Namespace) -> None:
+    added = collections.Counter()
+    n_in = n_out = 0
+    with Path(args.out).open("w", encoding="utf-8") as out:
+        for doc_id, doc_rows in grouped_rows(Path(args.pred)):
+            n_in += len(doc_rows)
+            for rec in close_doc(doc_id, doc_rows, added):
+                out.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                n_out += 1
+    print(f"input rows {n_in} -> output rows {n_out}")
     for rule, n in added.most_common():
         print(f"  {rule}: +{n}")
     print("out:", args.out)
 
 
 def cmd_eval(args: argparse.Namespace) -> None:
-    gold_docs = {
-        rec["document_id"]: rec
-        for rec in (
-            json.loads(line)
-            for line in Path(args.gold).read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        )
-    }
-    train_keys = set(json.loads(Path(OUT / "train_fact_keys.json").read_text(encoding="utf-8")))
+    train_keys = set(json.loads(Path(args.train_keys).read_text(encoding="utf-8")))
+    gold_at = {doc_id: pos[0] for doc_id, pos in doc_offsets(Path(args.gold)).items()}
+    gold_fh = Path(args.gold).open("rb")
 
-    # surface form -> entity index, per document. The type-aware table is tried
-    # first because two different entities of a document can share a surface form.
-    lookup: dict[str, dict[tuple[str, str], int]] = {}
-    lookup_any: dict[str, dict[str, int]] = {}
-    for doc_id, rec in gold_docs.items():
+    def gold_doc(doc_id: str) -> dict:
+        gold_fh.seek(gold_at[doc_id])
+        return json.loads(gold_fh.readline().decode("utf-8-sig"))
+
+    totals = collections.Counter()
+    per_rel_gold = collections.Counter()
+    per_rel_hit = collections.Counter()
+
+    def score_doc(doc_id: str, rec: dict, rows: list[dict]) -> None:
         typed: dict[tuple[str, str], int] = {}
         plain: dict[str, int] = {}
+        forms: dict[int, list[str]] = {}
         for ent in rec["entities"]:
-            for form in ent["forms"]:
-                typed.setdefault((norm(form), ent["type"]), ent["idx"])
-                plain.setdefault(norm(form), ent["idx"])
-        lookup[doc_id] = typed
-        lookup_any[doc_id] = plain
+            forms[ent["idx"]] = [norm(f) for f in ent["forms"]]
+            for form in forms[ent["idx"]]:
+                typed.setdefault((form, ent["type"]), ent["idx"])
+                plain.setdefault(form, ent["idx"])
 
-    def resolve(doc_id: str, entity: dict) -> int | None:
-        """Map a predicted entity onto a gold entity index by its name.
+        def resolve(entity: dict) -> int | None:
+            key = norm(entity["name"])
+            hit = typed.get((key, entity.get("type", "")))
+            if hit is not None:
+                return hit
+            return None if args.strict_types else plain.get(key)
 
-        The type-aware table comes first. The name-only fallback then accepts a
-        prediction whose type is wrong, which is more forgiving than the index
-        based scoring of the original benchmark. `--strict-types` turns the
-        fallback off, so the report can state both numbers.
-        """
-        key = norm(entity["name"])
-        hit = lookup[doc_id].get((key, entity.get("type", "")))
-        if hit is not None:
-            return hit
-        return None if args.strict_types else lookup_any[doc_id].get(key)
+        def seen(h: int, rel: str, t: int) -> bool:
+            return any(f"{hf}|{rel}|{tf}" in train_keys for hf in forms[h] for tf in forms[t])
 
-    # Every surface form of an entity, so the train check below matches the way
-    # train_fact_keys was built. One chosen form on either side would miss facts.
-    all_forms = {
-        doc_id: {e["idx"]: [norm(f) for f in e["forms"]] for e in rec["entities"]}
-        for doc_id, rec in gold_docs.items()
-    }
+        gold = {(tr["h"], tr["r_name"], tr["t"]) for tr in rec["triples"]}
+        pred = set()
+        for row in rows:
+            totals["predicted_rows"] += 1
+            h, t = resolve(row["subject"]), resolve(row["object"])
+            if h is None or t is None:
+                totals["entity_unmatched"] += 1
+                continue
+            pred.add((h, row["predicate"], t))
+        hit = gold & pred
+        gold_ign = {k for k in gold if not seen(*k)}
+        pred_ign = {k for k in pred if not seen(*k)}
+        totals["gold"] += len(gold)
+        totals["pred"] += len(pred)
+        totals["hit"] += len(hit)
+        totals["gold_ign"] += len(gold_ign)
+        totals["pred_ign"] += len(pred_ign)
+        totals["hit_ign"] += len(gold_ign & pred_ign)
+        totals["documents"] += 1
+        for _, rel, _ in gold:
+            per_rel_gold[rel] += 1
+        for _, rel, _ in hit:
+            per_rel_hit[rel] += 1
 
-    def seen_in_train(fact: tuple[str, int, str, int]) -> bool:
-        doc_id, h, rel, t = fact
-        return any(
-            f"{hf}|{rel}|{tf}" in train_keys
-            for hf in all_forms[doc_id][h]
-            for tf in all_forms[doc_id][t]
-        )
-
-    gold_set: set[tuple[str, int, str, int]] = set()
-    for doc_id, rec in gold_docs.items():
-        for tr in rec["triples"]:
-            gold_set.add((doc_id, tr["h"], tr["r_name"], tr["t"]))
-
-    pred_set: set[tuple[str, int, str, int]] = set()
-    unmatched = total_pred = 0
-    for line in Path(args.pred).read_text(encoding="utf-8").splitlines():
-        if not line.strip():
+    scored: set[str] = set()
+    for doc_id, rows in grouped_rows(Path(args.pred)):
+        if doc_id not in gold_at:
             continue
-        rec = json.loads(line)
-        doc_id = rec["document_id"]
-        if doc_id not in lookup:
-            continue
-        total_pred += 1
-        h = resolve(doc_id, rec["subject"])
-        t = resolve(doc_id, rec["object"])
-        if h is None or t is None:
-            unmatched += 1
-            continue
-        pred_set.add((doc_id, h, rec["predicate"], t))
+        scored.add(doc_id)
+        score_doc(doc_id, gold_doc(doc_id), rows)
+    for doc_id in gold_at:
+        if doc_id not in scored:
+            score_doc(doc_id, gold_doc(doc_id), [])
+    gold_fh.close()
 
-    def score(gold: set, pred: set) -> tuple[float, float, float]:
-        hit = len(gold & pred)
-        p = hit / len(pred) * 100 if pred else 0.0
-        r = hit / len(gold) * 100 if gold else 0.0
+    def score(gold: int, pred: int, hit: int) -> tuple[float, float, float]:
+        p = hit / pred * 100 if pred else 0.0
+        r = hit / gold * 100 if gold else 0.0
         f = 2 * p * r / (p + r) if p + r else 0.0
         return p, r, f
 
-    p, r, f1 = score(gold_set, pred_set)
-    # Ign F1: drop every fact already present in the train split, on both sides,
-    # so a model that memorised the train facts earns nothing for repeating them.
-    gold_ign = {k for k in gold_set if not seen_in_train(k)}
-    pred_ign = {k for k in pred_set if not seen_in_train(k)}
-    ip, ir, if1 = score(gold_ign, pred_ign)
-
-    per_rel = collections.Counter(rel for _, _, rel, _ in gold_set)
-    print(f"documents        : {len(gold_docs)}")
-    print(f"gold triples     : {len(gold_set)}  (unseen in train: {len(gold_ign)})")
-    print(f"predicted rows   : {total_pred}  (entity not matched: {unmatched})")
-    print(f"predicted triples: {len(pred_set)}")
+    p, r, f1 = score(totals["gold"], totals["pred"], totals["hit"])
+    ip, ir, if1 = score(totals["gold_ign"], totals["pred_ign"], totals["hit_ign"])
+    print(f"documents        : {totals['documents']}")
+    print(f"gold triples     : {totals['gold']}  (unseen in train: {totals['gold_ign']})")
+    print(f"predicted rows   : {totals['predicted_rows']}  (entity not matched: {totals['entity_unmatched']})")
+    print(f"predicted triples: {totals['pred']}")
     print(f"Precision {p:.2f}  Recall {r:.2f}  F1 {f1:.2f}")
     print(f"Ign Precision {ip:.2f}  Ign Recall {ir:.2f}  Ign F1 {if1:.2f}")
-    print(f"distinct gold relations in this subset: {len(per_rel)}")
+    print(f"distinct gold relations in this subset: {len(per_rel_gold)}")
 
     if args.report:
         Path(args.report).write_text(
             json.dumps(
                 {
                     "entity_matching": "strict_types" if args.strict_types else "name_fallback",
-                    "documents": len(gold_docs),
-                    "gold_triples": len(gold_set),
-                    "gold_triples_unseen": len(gold_ign),
-                    "predicted_rows": total_pred,
-                    "predicted_triples": len(pred_set),
-                    "predicted_triples_unseen": len(pred_ign),
-                    "entity_unmatched": unmatched,
+                    "documents": totals["documents"],
+                    "gold_triples": totals["gold"],
+                    "gold_triples_unseen": totals["gold_ign"],
+                    "predicted_rows": totals["predicted_rows"],
+                    "predicted_triples": totals["pred"],
+                    "predicted_triples_unseen": totals["pred_ign"],
+                    "entity_unmatched": totals["entity_unmatched"],
                     "precision": round(p, 2),
                     "recall": round(r, 2),
                     "f1": round(f1, 2),
                     "ign_precision": round(ip, 2),
                     "ign_recall": round(ir, 2),
                     "ign_f1": round(if1, 2),
-                    "top_gold_relations": per_rel.most_common(10),
-                    # Recall for the ten most frequent relations. It shows which
-                    # relation the system misses, not only the overall number.
+                    "top_gold_relations": per_rel_gold.most_common(10),
                     "recall_per_relation": {
-                        rel: {
-                            "gold": count,
-                            "recall": round(
-                                len({k for k in gold_set & pred_set if k[2] == rel}) / count * 100, 1
-                            ),
-                        }
-                        for rel, count in per_rel.most_common(10)
+                        rel: {"gold": count, "recall": round(per_rel_hit[rel] / count * 100, 1)}
+                        for rel, count in per_rel_gold.most_common(10)
                     },
                 },
                 ensure_ascii=False,
@@ -519,6 +457,7 @@ def main() -> None:
     ev.add_argument("pred")
     ev.add_argument("--gold", default=str(OUT / "gold_dev.jsonl"))
     ev.add_argument("--report", default=str(OUT / "eval_report.json"))
+    ev.add_argument("--train-keys", default=str(OUT / "train_fact_keys.json"))
     ev.add_argument("--strict-types", action="store_true",
                     help="drop a prediction whose entity type does not match gold")
     ev.set_defaults(func=cmd_eval)

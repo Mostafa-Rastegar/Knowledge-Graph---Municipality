@@ -1,13 +1,3 @@
-"""Ticket 1: ingest municipality docs with audit trail.
-
-CLI:
-  python -m src.ingest <file-or-dir>
-
-Outputs:
-  data/processed/raw_extracts.jsonl
-  data/processed/cleaned_pages.jsonl
-  data/processed/chunks.jsonl
-"""
 from __future__ import annotations
 
 import argparse
@@ -133,7 +123,6 @@ def clean(text: str) -> str:
 
 
 def transcribe_image(path: Path) -> str:
-    """OCR a Persian document image via the vision LLM (reuses Ticket-2 client)."""
     import base64
 
     from src.extract import client_from_env
@@ -159,7 +148,6 @@ def transcribe_image(path: Path) -> str:
 
 
 def extract_pages(path: Path) -> list[tuple[int, str]]:
-    """Return [(page_no, raw_text), ...]. Non-paged formats use page 1."""
     ext = path.suffix.lower()
     if ext == ".pdf":
         import fitz

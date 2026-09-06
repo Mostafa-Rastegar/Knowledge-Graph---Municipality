@@ -1,15 +1,11 @@
-# Rebuild the whole knowledge graph from the raw documents.
-# The pipeline is idempotent, so a second run adds no duplicate node or edge.
-#
-#   .\rebuild.ps1            # municipality graph (Persian)
-#   .\rebuild.ps1 -Benchmark # Re-DocRED benchmark run and evaluation
-#   .\rebuild.ps1 -Pdf       # also render the reports to PDF
-
 param(
     [switch]$Benchmark,
     [switch]$Full,
+    [switch]$DocRED,
+    [switch]$Distant,
     [switch]$Pdf,
-    [int]$Limit = 50
+    [int]$Limit = 50,
+    [int]$Workers = 48
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,9 +13,55 @@ $env:PYTHONUTF8 = "1"
 
 function Step($text) { Write-Host "`n=== $text ===" -ForegroundColor Cyan }
 
-if ($Full) {
-    # The full 500-document Dev run. Both passes resume from their output file,
-    # so a stopped run continues here instead of starting again.
+function Consensus($a, $b, $out) {
+    $union = "$out.union"
+    Get-Content $a, $b | Set-Content -Encoding utf8 $union
+    python -m src.redocred closure $union --out $out
+    Remove-Item $union
+}
+
+if ($DocRED) {
+    $D = "data/benchmark/docred"
+    $O = "configs/ontology_redocred.json"
+    $F = "configs/fewshot_redocred.json"
+
+    Step "0/5 prepare DocRED splits and the Re-DocRED test split"
+    python -m src.docred prepare
+    python -m src.redocred prepare --split test --limit 500
+
+    foreach ($split in @("validation", "test", "train_annotated")) {
+        Step "$split pass A (no examples)"
+        python -m src.extract $D/chunks_$split.jsonl --out $D/triplets_${split}_a.jsonl --ontology $O --workers $Workers
+        Step "$split pass B (two examples)"
+        python -m src.extract $D/chunks_$split.jsonl --out $D/triplets_${split}_b.jsonl --ontology $O --fewshot $F --workers $Workers
+        Step "$split consensus + closure"
+        Consensus $D/triplets_${split}_a.jsonl $D/triplets_${split}_b.jsonl $D/triplets_$split.jsonl
+        if ($split -ne "test") {
+            Step "$split evaluate"
+            python -m src.redocred eval $D/triplets_$split.jsonl --gold $D/gold_$split.jsonl --report $D/eval_report_$split.json
+        }
+    }
+
+    Step "Re-DocRED test pass A"
+    python -m src.extract data/benchmark/chunks_test.jsonl --out data/benchmark/triplets_test_a.jsonl --ontology $O --workers $Workers
+    Step "Re-DocRED test pass B"
+    python -m src.extract data/benchmark/chunks_test.jsonl --out data/benchmark/triplets_test_b.jsonl --ontology $O --fewshot $F --workers $Workers
+    Consensus data/benchmark/triplets_test_a.jsonl data/benchmark/triplets_test_b.jsonl data/benchmark/triplets_test.jsonl
+    python -m src.redocred eval data/benchmark/triplets_test.jsonl --gold data/benchmark/gold_test.jsonl --report data/benchmark/eval_report_test.json
+
+    Step "train_distant pass A (101,873 documents)"
+    python -m src.extract $D/chunks_train_distant.jsonl --out $D/triplets_train_distant_a.jsonl --ontology $O --workers $Workers
+    if ($Distant) {
+        Step "train_distant pass B"
+        python -m src.extract $D/chunks_train_distant.jsonl --out $D/triplets_train_distant_b.jsonl --ontology $O --fewshot $F --workers $Workers
+        Consensus $D/triplets_train_distant_a.jsonl $D/triplets_train_distant_b.jsonl $D/triplets_train_distant.jsonl
+    } else {
+        python -m src.redocred closure $D/triplets_train_distant_a.jsonl --out $D/triplets_train_distant.jsonl
+    }
+    Step "train_distant agreement with the distant labels"
+    python -m src.redocred eval $D/triplets_train_distant.jsonl --gold $D/gold_train_distant.jsonl --report $D/eval_report_train_distant.json
+}
+elseif ($Full) {
     Step "1/4 pass A of 500 documents (no examples in the prompt)"
     python -m src.extract data/benchmark/chunks_dev.jsonl `
         --out data/benchmark/triplets_full_a.jsonl `
@@ -32,11 +74,7 @@ if ($Full) {
         --fewshot configs/fewshot_redocred.json
 
     Step "3/4 consensus of both passes, then the closure layer"
-    Get-Content data/benchmark/triplets_full_a.jsonl, data/benchmark/triplets_full_b.jsonl |
-        Set-Content -Encoding utf8 data/benchmark/_full_union.jsonl
-    python -m src.redocred closure data/benchmark/_full_union.jsonl `
-        --out data/benchmark/triplets_full.jsonl
-    Remove-Item data/benchmark/_full_union.jsonl
+    Consensus data/benchmark/triplets_full_a.jsonl data/benchmark/triplets_full_b.jsonl data/benchmark/triplets_full.jsonl
 
     Step "4/4 evaluate against all 500 gold documents"
     python -m src.redocred eval data/benchmark/triplets_full.jsonl `

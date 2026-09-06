@@ -1,0 +1,100 @@
+{
+  "entity_matching": "name_fallback",
+  "documents": 498,
+  "gold_triples": 6141,
+  "gold_triples_unseen": 5187,
+  "predicted_rows": 11845,
+  "predicted_triples": 10290,
+  "predicted_triples_unseen": 9824,
+  "entity_unmatched": 1408,
+  "precision": 16.79,
+  "recall": 28.14,
+  "f1": 21.03,
+  "ign_precision": 15.21,
+  "ign_recall": 28.8,
+  "ign_f1": 19.91,
+  "top_gold_relations": [
+    [
+      "country",
+      1430
+    ],
+    [
+      "located in the administrative territorial entity",
+      571
+    ],
+    [
+      "country of citizenship",
+      401
+    ],
+    [
+      "contains administrative territorial entity",
+      291
+    ],
+    [
+      "publication date",
+      186
+    ],
+    [
+      "performer",
+      171
+    ],
+    [
+      "date of birth",
+      168
+    ],
+    [
+      "date of death",
+      120
+    ],
+    [
+      "record label",
+      108
+    ],
+    [
+      "country of origin",
+      101
+    ]
+  ],
+  "recall_per_relation": {
+    "country": {
+      "gold": 1430,
+      "recall": 25.0
+    },
+    "located in the administrative territorial entity": {
+      "gold": 571,
+      "recall": 48.9
+    },
+    "country of citizenship": {
+      "gold": 401,
+      "recall": 26.2
+    },
+    "contains administrative territorial entity": {
+      "gold": 291,
+      "recall": 44.0
+    },
+    "publication date": {
+      "gold": 186,
+      "recall": 42.5
+    },
+    "performer": {
+      "gold": 171,
+      "recall": 13.5
+    },
+    "date of birth": {
+      "gold": 168,
+      "recall": 75.0
+    },
+    "date of death": {
+      "gold": 120,
+      "recall": 65.0
+    },
+    "record label": {
+      "gold": 108,
+      "recall": 0.0
+    },
+    "country of origin": {
+      "gold": 101,
+      "recall": 1.0
+    }
+  }
+}

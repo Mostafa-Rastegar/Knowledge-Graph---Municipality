@@ -1,11 +1,3 @@
-"""Render a Persian Markdown report to PDF.
-
-The project already installs Playwright for the web interface, so we print the
-page with Chromium instead of adding a new tool. Mermaid blocks render first,
-then the page becomes a PDF.
-
-Run: python -m src.md2pdf docs/FINAL_REPORT.md --out docs/FINAL_REPORT.pdf
-"""
 from __future__ import annotations
 
 import argparse
@@ -13,14 +5,13 @@ import os
 import re
 from pathlib import Path
 
-# The project keeps its browser in ms-playwright/. Point Playwright there before
-# it loads, so the command works without an extra environment variable.
+
 _LOCAL_BROWSERS = Path(__file__).resolve().parent.parent / "ms-playwright"
 if _LOCAL_BROWSERS.is_dir():
     os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(_LOCAL_BROWSERS))
 
-import markdown  # noqa: E402
-from playwright.sync_api import sync_playwright  # noqa: E402
+import markdown
+from playwright.sync_api import sync_playwright
 
 CSS = """
 @page { size: A4; margin: 18mm 16mm; }
@@ -53,7 +44,6 @@ PAGE = """<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8">
 
 
 def to_html(md_text: str) -> str:
-    """Convert Markdown to HTML and keep mermaid blocks for the browser."""
     fences = []
 
     def stash(match: re.Match) -> str:
@@ -82,7 +72,7 @@ def main() -> None:
         browser = pw.chromium.launch()
         page = browser.new_page()
         page.goto(html_path.resolve().as_uri(), wait_until="networkidle")
-        page.wait_for_timeout(2500)  # let mermaid draw
+        page.wait_for_timeout(2500)
         page.pdf(path=str(out), format="A4", print_background=True,
                  margin={"top": "18mm", "bottom": "18mm", "left": "16mm", "right": "16mm"})
         browser.close()

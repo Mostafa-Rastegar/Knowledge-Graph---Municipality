@@ -1,7 +1,3 @@
-"""Offline checks for the Re-DocRED harness. No LLM call, no network.
-
-Run: python -m tests.test_redocred
-"""
 import argparse
 import collections
 import json
@@ -35,20 +31,11 @@ def pred_row(doc, tr, subject_name=None, object_name=None):
 
 def run_eval(report=REPORT):
     redocred.cmd_eval(argparse.Namespace(pred=str(TMP), gold=str(GOLD),
-                                         report=str(report), strict_types=False))
+                                         report=str(report), strict_types=False, train_keys=str(redocred.OUT / "train_fact_keys.json")))
     return json.loads(report.read_text(encoding="utf-8"))
 
 
 def test_oracle_hits_the_matching_ceiling():
-    """An oracle that returns every gold fact by name must score ~100.
-
-    It cannot reach exactly 100: a few documents hold two different entities
-    with the same surface form and the same type, so a name-based answer is
-    ambiguous. That gap is the ceiling of any name-based system on this data,
-    and the evaluation report states it. The ceiling drops a little as the
-    corpus grows, because a bigger corpus holds more colliding names, so the
-    test checks the ceiling instead of a fixed number.
-    """
     docs = gold_docs()
     write_pred([pred_row(d, tr) for d in docs for tr in d["triples"]])
     rep = run_eval()
@@ -60,11 +47,6 @@ def test_oracle_hits_the_matching_ceiling():
 
 
 def test_same_name_same_type_entities_are_the_ceiling():
-    """Name-based matching cannot separate two entities that look identical.
-
-    This is the reason the oracle scores 99.76 and not 100. The check builds
-    the collision directly instead of hoping the corpus contains one.
-    """
     doc = {
         "document_id": "d0",
         "title": "t",
@@ -79,9 +61,9 @@ def test_same_name_same_type_entities_are_the_ceiling():
     gold.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     write_pred([pred_row(doc, doc["triples"][0])])
     redocred.cmd_eval(argparse.Namespace(pred=str(TMP), gold=str(gold),
-                                         report=str(REPORT), strict_types=False))
+                                         report=str(REPORT), strict_types=False, train_keys=str(redocred.OUT / "train_fact_keys.json")))
     rep = json.loads(REPORT.read_text(encoding="utf-8"))
-    # The prediction names entity 1, but the lookup answers with entity 0.
+
     assert rep["entity_unmatched"] == 0, rep
     assert rep["recall"] == 0.0, rep
     gold.unlink()
@@ -108,7 +90,6 @@ def test_unmatched_entity_is_dropped():
 
 
 def test_surface_form_variant_still_matches():
-    """A different mention of the same entity must map to the same gold index."""
     doc = next(d for d in gold_docs() if any(len(e["forms"]) > 1 for e in d["entities"]))
     ents = {e["idx"]: e for e in doc["entities"]}
     tr = next(t for t in doc["triples"] if len(ents[t["h"]]["forms"]) > 1)
@@ -120,12 +101,6 @@ def test_surface_form_variant_still_matches():
 
 
 def test_ign_drops_train_facts():
-    """A fact already present in train must leave BOTH pools, not one.
-
-    Dropping it from gold only would punish a correct prediction; dropping it
-    from predictions only would reward a miss. The check below takes a real
-    train fact and an unseen one, and predicts both.
-    """
     docs = gold_docs()
     train_keys = set(json.loads((redocred.OUT / "train_fact_keys.json").read_text(encoding="utf-8")))
 
@@ -151,8 +126,8 @@ def test_ign_drops_train_facts():
     write_pred([pred_row(seen[0], seen[1]), pred_row(unseen[0], unseen[1])])
     rep = run_eval()
     assert rep["predicted_triples"] == 2, rep
-    # The train fact leaves BOTH pools. So the prediction pool loses exactly one
-    # entry, and precision stays 100 instead of counting the removal as a miss.
+
+
     assert rep["predicted_triples_unseen"] == 1, rep
     assert rep["gold_triples_unseen"] < rep["gold_triples"], rep
     assert rep["ign_precision"] == 100.0, rep
@@ -160,7 +135,6 @@ def test_ign_drops_train_facts():
 
 
 def test_closure_rules():
-    """R1 inverse, R2 transitive and R3 chain must each fire exactly once."""
     src = Path("data/benchmark/_test_closure_in.jsonl")
     dst = Path("data/benchmark/_test_closure_out.jsonl")
     rows = [
@@ -201,11 +175,11 @@ def test_closure_rules():
         if r.get("derived_by")
     ]
     assert all(r["evidence"] for r in derived), "every derived fact needs evidence"
-    # The counts matter, not only the presence. A rule that fires twice on this
-    # input would build a fact the three premises do not support.
+
+
     fired = collections.Counter(r["derived_by"] for r in derived)
-    # Two of the three premise facts use LOCATED_IN, which has an inverse.
-    # The third uses COUNTRY, which has none, so R1 fires twice, not three times.
+
+
     assert fired["R1_inverse"] == 2, fired
     assert fired["R2_transitive"] == 1, fired
     assert fired["R3_chain_country"] == 1, fired

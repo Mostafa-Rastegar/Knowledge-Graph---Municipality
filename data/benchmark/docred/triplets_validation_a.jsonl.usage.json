@@ -1,0 +1,10 @@
+{
+  "prompt_tokens": 1000834,
+  "completion_tokens": 1095346,
+  "cached_tokens": 0,
+  "calls": 898,
+  "seconds": 279.8,
+  "chunks_extracted": 898,
+  "model": "openai/gpt-4.1-mini",
+  "workers": 48
+}

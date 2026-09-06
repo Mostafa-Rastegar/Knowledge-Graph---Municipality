@@ -1,13 +1,3 @@
-r"""Frontend API: upload a document, run the pipeline, view the knowledge graph.
-
-Run:
-  .\.venv\Scripts\python.exe -m uvicorn src.app:app --reload
-Then open http://localhost:8000
-
-Two things only, per spec:
-  - POST /api/upload : save file to data/raw, run ingest->extract->load, return counts
-  - GET  /api/graph  : return entities + relationships for the graph view
-"""
 from __future__ import annotations
 
 import subprocess
@@ -28,6 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 WEB_DIR = ROOT / "web"
 SUPPORTED = {".pdf", ".docx", ".txt", ".png", ".jpg", ".jpeg"}
+TYPE_EXPR = "[l IN labels(n) WHERE l <> 'Entity'][0]"
 
 app = FastAPI(title="Municipality Knowledge Graph")
 
@@ -51,7 +42,6 @@ def _driver():
 
 
 def _run(step: str, *args: str) -> None:
-    """Run a pipeline module with the same interpreter; raise on failure."""
     proc = subprocess.run(
         [sys.executable, "-m", step, *args],
         cwd=ROOT, capture_output=True, text=True,
@@ -75,7 +65,6 @@ async def upload(file: UploadFile) -> JSONResponse:
     dest = RAW_DIR / name
     dest.write_bytes(await file.read())
 
-    # Full rebuild over data/raw — MERGE keeps it duplicate-free.
     _run("src.ingest", "data/raw")
     _run("src.extract", "data/processed/chunks.jsonl")
     _run("src.load_neo4j", "data/extracted/triplets.jsonl")
@@ -83,49 +72,81 @@ async def upload(file: UploadFile) -> JSONResponse:
     return JSONResponse({"ok": True, "file": name})
 
 
-@app.get("/api/graph")
-def graph(doc: str = "") -> dict:
-    """The whole graph, or one document's graph when `doc` is given.
+def _node(r) -> dict:
+    return {"id": r["id"], "label": r["name"], "group": r["type"], "groupFa": GROUP_FA.get(r["type"], r["type"])}
 
-    The database holds the municipality graph and the English benchmark graph
-    side by side. Drawing every node at once is unreadable, so `doc` limits the
-    answer to the facts whose evidence came from that document.
-    """
+
+@app.get("/api/stats")
+def stats() -> dict:
     driver = _driver()
     db = os.environ.get("NEO4J_DATABASE", "").strip() or None
-    nodes, edges = [], []
     try:
         with driver.session(database=db) as s:
-            node_query = (
-                "MATCH (n)-[:HAS_EVIDENCE]->(e:Evidence) "
-                "WHERE NOT n:Evidence AND e.chunk_id STARTS WITH $doc "
-                "RETURN DISTINCT n.key AS id, n.name AS name, labels(n)[0] AS type"
-            ) if doc else (
-                "MATCH (n) WHERE NOT n:Evidence "
-                "RETURN n.key AS id, n.name AS name, labels(n)[0] AS type"
-            )
-            for r in s.run(node_query, doc=doc):
-                nodes.append({
-                    "id": r["id"], "label": r["name"],
-                    "group": r["type"], "groupFa": GROUP_FA.get(r["type"], r["type"]),
-                })
-            edge_query = (
-                "MATCH (a)-[rel]->(b) WHERE type(rel) <> 'HAS_EVIDENCE' "
-                "MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
-                "WHERE e.chunk_id STARTS WITH $doc "
-                "RETURN a.key AS src, type(rel) AS type, b.key AS dst, "
-                "collect(e.text)[0] AS evidence"
-            ) if doc else (
-                "MATCH (a)-[rel]->(b) WHERE type(rel) <> 'HAS_EVIDENCE' "
-                "OPTIONAL MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
-                "RETURN a.key AS src, type(rel) AS type, b.key AS dst, "
-                "collect(e.text)[0] AS evidence"
-            )
-            for r in s.run(edge_query, doc=doc):
-                edges.append({
-                    "from": r["src"], "to": r["dst"],
-                    "label": r["type"], "evidence": r["evidence"] or "",
-                })
+            labels = {
+                r["label"]: r["n"]
+                for r in s.run(
+                    "MATCH (n) WHERE NOT n:Evidence "
+                    f"WITH {TYPE_EXPR} AS label RETURN label, count(*) AS n ORDER BY n DESC"
+                )
+            }
+            rels = {
+                r["type"]: r["n"]
+                for r in s.run(
+                    "MATCH ()-[r]->() WHERE type(r) <> 'HAS_EVIDENCE' "
+                    "RETURN type(r) AS type, count(*) AS n ORDER BY n DESC"
+                )
+            }
+            evidence = s.run("MATCH (e:Evidence) RETURN count(e) AS n").single()["n"]
+    finally:
+        driver.close()
+    return {
+        "entities": sum(labels.values()), "facts": sum(rels.values()), "evidence": evidence,
+        "by_type": labels, "by_relation": rels,
+    }
+
+
+@app.get("/api/graph")
+def graph(doc: str = "", q: str = "", limit: int = 300) -> dict:
+    driver = _driver()
+    db = os.environ.get("NEO4J_DATABASE", "").strip() or None
+    limit = max(1, min(limit, 3000))
+    nodes, edges, seen = [], [], set()
+    try:
+        with driver.session(database=db) as s:
+            if doc:
+                edge_query = (
+                    "MATCH (e:Evidence) WHERE e.chunk_id STARTS WITH $doc "
+                    "MATCH (a)-[:HAS_EVIDENCE]->(e)<-[:HAS_EVIDENCE]-(b) "
+                    "MATCH (a)-[rel]->(b) WHERE type(rel) <> 'HAS_EVIDENCE' "
+                    "RETURN DISTINCT a.key AS src, type(rel) AS type, b.key AS dst, e.text AS evidence LIMIT $limit"
+                )
+            elif q:
+                edge_query = (
+                    "MATCH (n:Entity) WHERE toLower(n.name) CONTAINS toLower($q) "
+                    "WITH n ORDER BY size(n.name) LIMIT 20 "
+                    "MATCH (n)-[rel]-(m:Entity) WHERE type(rel) <> 'HAS_EVIDENCE' "
+                    "WITH startNode(rel) AS a, endNode(rel) AS b, rel "
+                    "OPTIONAL MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
+                    "RETURN DISTINCT a.key AS src, type(rel) AS type, b.key AS dst, collect(e.text)[0] AS evidence LIMIT $limit"
+                )
+            else:
+                edge_query = (
+                    "MATCH (n:Entity) WITH n, COUNT { (n)--() } AS degree ORDER BY degree DESC LIMIT 5 "
+                    "MATCH (n)-[rel]-(m:Entity) WHERE type(rel) <> 'HAS_EVIDENCE' "
+                    "WITH startNode(rel) AS a, endNode(rel) AS b, rel "
+                    "OPTIONAL MATCH (a)-[:HAS_EVIDENCE]->(e:Evidence)<-[:HAS_EVIDENCE]-(b) "
+                    "RETURN DISTINCT a.key AS src, type(rel) AS type, b.key AS dst, collect(e.text)[0] AS evidence LIMIT $limit"
+                )
+            for r in s.run(edge_query, doc=doc, q=q, limit=limit):
+                edges.append({"from": r["src"], "to": r["dst"], "label": r["type"], "evidence": r["evidence"] or ""})
+                seen.add(r["src"])
+                seen.add(r["dst"])
+            if seen:
+                node_query = (
+                    "MATCH (n:Entity) WHERE n.key IN $keys "
+                    f"RETURN n.key AS id, n.name AS name, {TYPE_EXPR} AS type"
+                )
+                nodes = [_node(r) for r in s.run(node_query, keys=list(seen))]
     finally:
         driver.close()
     return {"nodes": nodes, "edges": edges}

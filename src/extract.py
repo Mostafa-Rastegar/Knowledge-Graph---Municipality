@@ -1,23 +1,13 @@
-"""Ticket 2: extract ontology triplets from chunks with an LLM.
-
-CLI:
-  python -m src.extract data/processed/chunks.jsonl
-
-Reads LLM-ready chunks, calls the Hormouz OpenAI-compatible API, validates the
-output against the strict municipality ontology, drops anything that does not
-fit, and writes one triplet record per allowed fact (with evidence) to
-data/extracted/triplets.jsonl.
-
-Rerun-safe: a chunk already present in the output is reused as-is, so the same
-chunk never produces duplicate extraction records and only new chunks cost an
-LLM call.
-"""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import os
+import re as _re
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional
 
@@ -32,7 +22,6 @@ load_dotenv()
 
 ENTITY_TYPES = {"Project", "Contractor", "Location", "Official", "Budget", "Complaint"}
 
-# (subject_type, predicate, object_type) -> the only directed facts we keep.
 ALLOWED_RELATIONS = {
     ("Contractor", "EXECUTOR_OF", "Project"),
     ("Project", "LOCATED_IN", "Location"),
@@ -74,11 +63,6 @@ SYSTEM_PROMPT = """تو یک استخراج‌کننده دانش برای اس�
 
 
 def load_ontology(path: Path) -> None:
-    """Replace the hand-written municipality ontology with one defined in JSON.
-
-    The validation code, the evidence rule and the dedup logic stay the same;
-    only the schema changes. The Re-DocRED benchmark run uses this.
-    """
     global ENTITY_TYPES, ALLOWED_RELATIONS, SYSTEM_PROMPT
     spec = json.loads(path.read_text(encoding="utf-8"))
     ENTITY_TYPES = set(spec["entity_types"])
@@ -113,11 +97,6 @@ def load_ontology(path: Path) -> None:
 
 
 def load_fewshot(path: Path) -> None:
-    """Append worked examples to the system prompt.
-
-    The examples come from the train split, never from the split we score on.
-    They show the model the answer format and the relation density we expect.
-    """
     global SYSTEM_PROMPT
     examples = json.loads(path.read_text(encoding="utf-8"))
     blocks = []
@@ -168,19 +147,10 @@ class Triplet(BaseModel):
         return (self.subject.type, self.predicate, self.object.type) in ALLOWED_RELATIONS
 
 
-import re as _re
-
-# A budget line has a stable code like ۱۴۰۳-۳-۱۷; use it as the identity so the
-# same budget named "ردیف بودجه عمرانی ۱۴۰۳-۳-۱۷" and "۱۴۰۳-۳-۱۷" collapse to one.
 _BUDGET_CODE = _re.compile(r"[۰-۹0-9]{4}\s*-\s*[۰-۹0-9]{1,2}\s*-\s*[۰-۹0-9]{1,3}")
 
 
 def entity_key(entity: Entity) -> str:
-    """Stable id reused by the Neo4j loader: collapses whitespace, keeps text.
-
-    For Budget, key on the code number when present so the same budget referenced
-    across documents resolves to a single node.
-    """
     name = " ".join(entity.name.split())
     if entity.type == "Budget":
         m = _BUDGET_CODE.search(name)
@@ -201,10 +171,25 @@ def client_from_env() -> OpenAI:
         raise SystemExit("LLM_API_KEY is empty. Put the key in .env (never hardcode it).")
     if not base_url:
         raise SystemExit("LLM_BASE_URL is empty. Set it in .env.")
-    # A long batch meets slow requests. The default timeout is short enough that
-    # one slow answer ends the whole run, so we give each request more time.
     timeout = float(os.environ.get("LLM_TIMEOUT", "180"))
     return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
+
+
+USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "cached_tokens": 0, "calls": 0}
+_usage_lock = threading.Lock()
+
+
+def _count_usage(resp) -> None:
+    usage = getattr(resp, "usage", None)
+    if usage is None:
+        return
+    details = getattr(usage, "prompt_tokens_details", None)
+    cached = getattr(details, "cached_tokens", 0) or 0
+    with _usage_lock:
+        USAGE["prompt_tokens"] += usage.prompt_tokens or 0
+        USAGE["completion_tokens"] += usage.completion_tokens or 0
+        USAGE["cached_tokens"] += cached
+        USAGE["calls"] += 1
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=2, max=60))
@@ -219,6 +204,7 @@ def call_llm(client: OpenAI, text: str) -> str:
             {"role": "user", "content": text},
         ],
     )
+    _count_usage(resp)
     return resp.choices[0].message.content or "{}"
 
 
@@ -270,20 +256,35 @@ def extract_chunk(client: OpenAI, chunk: dict) -> list[dict]:
     return records
 
 
+def empty_path(out_path: Path) -> Path:
+    return out_path.with_suffix(out_path.suffix + ".empty")
+
+
 def load_existing(path: Path) -> dict[str, tuple[str, list[dict]]]:
-    """chunk_id -> (chunk_sha, records). Reused only when the text is unchanged,
-    so editing a file's content re-extracts instead of serving stale triplets."""
     by_chunk: dict[str, tuple[str, list[dict]]] = {}
-    if not path.exists():
-        return by_chunk
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        rec = json.loads(line)
-        sha, records = by_chunk.setdefault(rec["chunk_id"], (rec.get("chunk_sha", ""), []))
-        records.append(rec)
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            rec = json.loads(line)
+            sha, records = by_chunk.setdefault(rec["chunk_id"], (rec.get("chunk_sha", ""), []))
+            records.append(rec)
+    marker = empty_path(path)
+    if marker.exists():
+        for line in marker.read_text(encoding="utf-8").splitlines():
+            if "\t" in line:
+                chunk_id, sha = line.split("\t", 1)
+                by_chunk.setdefault(chunk_id, (sha, []))
     return by_chunk
+
+
+def read_chunks(path: Path) -> list[dict]:
+    return [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
 
 def main() -> None:
@@ -293,6 +294,8 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="re-extract even cached chunks")
     parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
     parser.add_argument("--fewshot", help="JSON file with worked examples for the prompt")
+    parser.add_argument("--workers", type=int, default=int(os.environ.get("LLM_WORKERS", "1")))
+    parser.add_argument("--limit", type=int, default=0, help="stop after this many chunks")
     args = parser.parse_args()
 
     if args.ontology:
@@ -311,55 +314,80 @@ def main() -> None:
 
     existing = {} if args.force else load_existing(out_path)
     if not args.force:
-        # A run that died left its progress in the .part file. Take it too, so
-        # the work of every earlier attempt adds up instead of being repeated.
         leftover = load_existing(out_path.with_suffix(out_path.suffix + ".part"))
         if leftover:
             log.info("resumed_from_partial_run", chunks=len(leftover))
             existing.update(leftover)
-    client: Optional[OpenAI] = None
 
+    chunks = read_chunks(chunks_path)
+    if args.limit:
+        chunks = chunks[: args.limit]
+    todo: list[dict] = []
     seen_facts: set[str] = set()
     chunks_done = chunks_cached = chunks_failed = facts = 0
-    # Write to a temporary file and move it into place at the end. Opening the
-    # output file directly empties it first, so a run that dies part way loses
-    # every chunk the earlier runs had finished.
     tmp_path = out_path.with_suffix(out_path.suffix + ".part")
-    with tmp_path.open("w", encoding="utf-8") as fh:
-        for line in chunks_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
+    started = time.time()
+
+    def write(fh, records: list[dict]) -> int:
+        n = 0
+        for rec in records:
+            if rec["fact_id"] in seen_facts:
                 continue
-            chunk = json.loads(line)
-            chunk_id = chunk["chunk_id"]
-            cached = existing.get(chunk_id)
+            seen_facts.add(rec["fact_id"])
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            n += 1
+        fh.flush()
+        return n
+
+    with tmp_path.open("w", encoding="utf-8") as fh, empty_path(out_path).open("a", encoding="utf-8") as empty_fh:
+        for chunk in chunks:
+            cached = existing.get(chunk["chunk_id"])
             if cached and cached[0] == chunk_sha(chunk["text"]):
-                records = cached[1]
+                facts += write(fh, cached[1])
                 chunks_cached += 1
+                chunks_done += 1
             else:
-                if client is None:
-                    client = client_from_env()
-                try:
-                    records = extract_chunk(client, chunk)
-                except Exception as err:
-                    # One dead chunk must not end a batch of hundreds. We skip it
-                    # and leave it out of the output, so a later run retries it.
+                todo.append(chunk)
+        log.info("plan", total=len(chunks), cached=chunks_cached, todo=len(todo), workers=args.workers)
+
+        client: Optional[OpenAI] = client_from_env() if todo else None
+
+        def work(chunk: dict):
+            try:
+                return chunk, extract_chunk(client, chunk), None
+            except Exception as err:
+                return chunk, None, err
+
+        with ThreadPoolExecutor(max_workers=max(1, args.workers)) as pool:
+            futures = [pool.submit(work, chunk) for chunk in todo]
+            for i, fut in enumerate(as_completed(futures), 1):
+                chunk, records, err = fut.result()
+                if err is not None:
                     chunks_failed += 1
-                    log.error("chunk_failed", chunk_id=chunk_id, error=str(err))
-                    continue
-                log.info("extracted", chunk_id=chunk_id, triplets=len(records))
-            chunks_done += 1
-            for rec in records:
-                if rec["fact_id"] in seen_facts:
-                    continue  # dedup identical fact across chunks
-                seen_facts.add(rec["fact_id"])
-                fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-                facts += 1
-            fh.flush()  # a stopped run keeps every chunk it finished
+                    log.error("chunk_failed", chunk_id=chunk["chunk_id"], error=str(err))
+                else:
+                    chunks_done += 1
+                    facts += write(fh, records)
+                    if not records:
+                        empty_fh.write(f"{chunk['chunk_id']}\t{chunk_sha(chunk['text'])}\n")
+                        empty_fh.flush()
+                if i % 50 == 0 or i == len(todo):
+                    elapsed = time.time() - started
+                    rate = i / elapsed * 60 if elapsed else 0.0
+                    log.info("progress", done=i, todo=len(todo), per_min=round(rate, 1),
+                             eta_min=round((len(todo) - i) / rate, 1) if rate else None,
+                             failed=chunks_failed, facts=facts, **USAGE)
 
     os.replace(tmp_path, out_path)
+    elapsed = round(time.time() - started, 1)
     log.info("done", chunks=chunks_done, cached=chunks_cached, failed=chunks_failed,
-             facts=facts, output=str(out_path))
+             facts=facts, output=str(out_path), seconds=elapsed, **USAGE)
+    if USAGE["calls"]:
+        out_path.with_suffix(out_path.suffix + ".usage.json").write_text(
+            json.dumps({**USAGE, "seconds": elapsed, "chunks_extracted": USAGE["calls"],
+                        "model": os.environ.get("LLM_MODEL", ""), "workers": args.workers}, indent=2),
+            encoding="utf-8",
+        )
     if chunks_failed:
         log.warning("rerun_to_retry_failed_chunks", failed=chunks_failed)
 

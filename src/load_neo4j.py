@@ -1,22 +1,10 @@
-"""Ticket 3: load extracted triplets into the Neo4j knowledge graph.
-
-CLI:
-  python -m src.load_neo4j data/extracted/triplets.jsonl
-
-Reads validated triplet records, creates constraints/indexes once, then MERGEs
-entities by their stable `key` and MERGEs the allowed directed relationship
-between them. Evidence text for each fact is stored as an Evidence node linked
-to the relationship's endpoints.
-
-Rerun-safe: everything is MERGE, so rerunning the same triplets creates no
-duplicate nodes or edges; only new facts add to the graph.
-"""
 from __future__ import annotations
 
 import argparse
 import json
 import os
 import re
+import time
 from pathlib import Path
 
 import structlog
@@ -28,41 +16,25 @@ load_dotenv()
 
 ENTITY_LABELS = ["Project", "Contractor", "Location", "Official", "Budget", "Complaint"]
 
-# Cypher per allowed (subject_type, predicate, object_type). Labels are fixed
-# from the ontology (not user input), so they are safe to inline.
-RELATION_CYPHER = {
-    ("Contractor", "EXECUTOR_OF", "Project"):
-        "MATCH (s:Contractor {key:$sk}), (o:Project {key:$ok}) MERGE (s)-[:EXECUTOR_OF]->(o)",
-    ("Project", "LOCATED_IN", "Location"):
-        "MATCH (s:Project {key:$sk}), (o:Location {key:$ok}) MERGE (s)-[:LOCATED_IN]->(o)",
-    ("Official", "SUPERVISOR_OF", "Project"):
-        "MATCH (s:Official {key:$sk}), (o:Project {key:$ok}) MERGE (s)-[:SUPERVISOR_OF]->(o)",
-    ("Budget", "FINANCES", "Project"):
-        "MATCH (s:Budget {key:$sk}), (o:Project {key:$ok}) MERGE (s)-[:FINANCES]->(o)",
-    ("Complaint", "COMPLAINS_ABOUT", "Project"):
-        "MATCH (s:Complaint {key:$sk}), (o:Project {key:$ok}) MERGE (s)-[:COMPLAINS_ABOUT]->(o)",
-    ("Complaint", "COMPLAINS_ABOUT", "Location"):
-        "MATCH (s:Complaint {key:$sk}), (o:Location {key:$ok}) MERGE (s)-[:COMPLAINS_ABOUT]->(o)",
+ALLOWED = {
+    ("Contractor", "EXECUTOR_OF", "Project"),
+    ("Project", "LOCATED_IN", "Location"),
+    ("Official", "SUPERVISOR_OF", "Project"),
+    ("Budget", "FINANCES", "Project"),
+    ("Complaint", "COMPLAINS_ABOUT", "Project"),
+    ("Complaint", "COMPLAINS_ABOUT", "Location"),
 }
 
 
-def load_ontology(path: Path) -> None:
-    """Replace the municipality schema with one defined in JSON.
+def rel_type(relation: str) -> str:
+    return re.sub(r"\W+", "_", relation).strip("_").upper()
 
-    The Re-DocRED run uses this. A relation name there holds spaces, so the
-    name becomes an upper-case Cypher relationship type. Labels and types come
-    from the ontology file, never from a record, so inlining them is safe.
-    """
-    global ENTITY_LABELS, RELATION_CYPHER
+
+def load_ontology(path: Path) -> None:
+    global ENTITY_LABELS, ALLOWED
     spec = json.loads(path.read_text(encoding="utf-8"))
     ENTITY_LABELS = sorted(spec["entity_types"])
-    RELATION_CYPHER = {}
-    for subject_type, relation, object_type in spec["allowed"]:
-        rel_type = re.sub(r"\W+", "_", relation).strip("_").upper()
-        RELATION_CYPHER[(subject_type, relation, object_type)] = (
-            f"MATCH (s:{subject_type} {{key:$sk}}), (o:{object_type} {{key:$ok}}) "
-            f"MERGE (s)-[:{rel_type}]->(o)"
-        )
+    ALLOWED = {tuple(item) for item in spec["allowed"]}
 
 
 def ensure_schema(session) -> None:
@@ -71,45 +43,53 @@ def ensure_schema(session) -> None:
             f"CREATE CONSTRAINT {label.lower()}_key IF NOT EXISTS "
             f"FOR (n:{label}) REQUIRE n.key IS UNIQUE"
         )
-    session.run(
-        "CREATE CONSTRAINT evidence_id IF NOT EXISTS "
-        "FOR (e:Evidence) REQUIRE e.fact_id IS UNIQUE"
+    session.run("CREATE CONSTRAINT entity_key IF NOT EXISTS FOR (n:Entity) REQUIRE n.key IS UNIQUE")
+    session.run("CREATE CONSTRAINT evidence_id IF NOT EXISTS FOR (e:Evidence) REQUIRE e.fact_id IS UNIQUE")
+    session.run("CREATE INDEX evidence_chunk IF NOT EXISTS FOR (e:Evidence) ON (e.chunk_id)")
+    session.run("CREATE INDEX entity_name IF NOT EXISTS FOR (n:Entity) ON (n.name)")
+    session.run("MATCH (n) WHERE NOT n:Evidence AND NOT n:Entity SET n:Entity")
+
+
+def load_batch(tx, records: list[dict]) -> int:
+    entities: dict[str, dict[str, str]] = {}
+    relations: dict[str, list[dict]] = {}
+    evidence: list[dict] = []
+    for rec in records:
+        s, o = rec["subject"], rec["object"]
+        entities.setdefault(s["type"], {})[s["key"]] = s["name"]
+        entities.setdefault(o["type"], {})[o["key"]] = o["name"]
+        relations.setdefault(rel_type(rec["predicate"]), []).append({"sk": s["key"], "ok": o["key"]})
+        evidence.append({
+            "sk": s["key"], "ok": o["key"], "fid": rec["fact_id"], "text": rec["evidence"],
+            "chunk_id": rec["chunk_id"], "source_path": rec["source_path"], "predicate": rec["predicate"],
+        })
+    for label, rows in entities.items():
+        tx.run(
+            f"UNWIND $rows AS r MERGE (n:Entity {{key:r.key}}) SET n.name=r.name, n:{label}",
+            rows=[{"key": k, "name": v} for k, v in rows.items()],
+        )
+    for rtype, rows in relations.items():
+        tx.run(
+            f"UNWIND $rows AS r MATCH (s:Entity {{key:r.sk}}), (o:Entity {{key:r.ok}}) "
+            f"MERGE (s)-[:{rtype}]->(o)",
+            rows=rows,
+        )
+    tx.run(
+        "UNWIND $rows AS r "
+        "MATCH (s:Entity {key:r.sk}), (o:Entity {key:r.ok}) "
+        "MERGE (e:Evidence {fact_id:r.fid}) "
+        "SET e.text=r.text, e.chunk_id=r.chunk_id, e.source_path=r.source_path, e.predicate=r.predicate "
+        "MERGE (s)-[:HAS_EVIDENCE]->(e) MERGE (o)-[:HAS_EVIDENCE]->(e)",
+        rows=evidence,
     )
+    return len(records)
 
 
-def merge_entity(session, entity: dict) -> None:
-    label = entity["type"]
-    session.run(
-        f"MERGE (n:{label} {{key:$key}}) SET n.name=$name",
-        key=entity["key"], name=entity["name"],
-    )
-
-
-def load_record(session, rec: dict) -> bool:
-    key = (rec["subject"]["type"], rec["predicate"], rec["object"]["type"])
-    cypher = RELATION_CYPHER.get(key)
-    if cypher is None:
-        log.warning("skip_unknown_relation", relation=key, fact_id=rec.get("fact_id"))
-        return False
-    merge_entity(session, rec["subject"])
-    merge_entity(session, rec["object"])
-    session.run(cypher, sk=rec["subject"]["key"], ok=rec["object"]["key"])
-    # Evidence node tied to both endpoints, idempotent on fact_id. Both labels
-    # are named, so each MATCH uses the key constraint instead of reading every
-    # node in the graph. Without them a large graph slows to a crawl.
-    session.run(
-        f"""
-        MATCH (s:{key[0]} {{key:$sk}}), (o:{key[2]} {{key:$ok}})
-        MERGE (e:Evidence {{fact_id:$fid}})
-        SET e.text=$text, e.chunk_id=$chunk_id, e.source_path=$source_path, e.predicate=$predicate
-        MERGE (s)-[:HAS_EVIDENCE]->(e)
-        MERGE (o)-[:HAS_EVIDENCE]->(e)
-        """,
-        sk=rec["subject"]["key"], ok=rec["object"]["key"], fid=rec["fact_id"],
-        text=rec["evidence"], chunk_id=rec["chunk_id"],
-        source_path=rec["source_path"], predicate=rec["predicate"],
-    )
-    return True
+def iter_records(path: Path):
+    with path.open(encoding="utf-8") as fh:
+        for line in fh:
+            if line.strip():
+                yield json.loads(line)
 
 
 def driver_from_env():
@@ -125,36 +105,44 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Load triplets into Neo4j")
     parser.add_argument("triplets", nargs="?", default="data/extracted/triplets.jsonl")
     parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
+    parser.add_argument("--batch", type=int, default=int(os.environ.get("NEO4J_BATCH", "2000")))
     args = parser.parse_args()
 
     if args.ontology:
         load_ontology(Path(args.ontology))
-        log.info("ontology_loaded", path=args.ontology,
-                 labels=len(ENTITY_LABELS), relations=len(RELATION_CYPHER))
+        log.info("ontology_loaded", path=args.ontology, labels=len(ENTITY_LABELS), relations=len(ALLOWED))
 
     path = Path(args.triplets)
     if not path.exists():
         parser.error(f"triplets file not found: {path}")
 
-    records = [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-
     database = os.environ.get("NEO4J_DATABASE", "").strip() or None
     driver = driver_from_env()
-    loaded = 0
+    loaded = skipped = total = 0
+    started = time.time()
+    batch: list[dict] = []
     try:
         with driver.session(database=database) as session:
             ensure_schema(session)
-            for rec in records:
-                if load_record(session, rec):
-                    loaded += 1
+            for rec in iter_records(path):
+                total += 1
+                if (rec["subject"]["type"], rec["predicate"], rec["object"]["type"]) not in ALLOWED:
+                    skipped += 1
+                    continue
+                batch.append(rec)
+                if len(batch) >= args.batch:
+                    loaded += session.execute_write(load_batch, batch)
+                    batch = []
+                    if loaded % (args.batch * 25) == 0:
+                        rate = loaded / (time.time() - started)
+                        log.info("progress", loaded=loaded, skipped=skipped, per_sec=round(rate, 1))
+            if batch:
+                loaded += session.execute_write(load_batch, batch)
     finally:
         driver.close()
 
-    log.info("done", facts_loaded=loaded, total_records=len(records), source=str(path))
+    log.info("done", facts_loaded=loaded, skipped=skipped, total_records=total,
+             seconds=round(time.time() - started, 1), source=str(path))
 
 
 if __name__ == "__main__":

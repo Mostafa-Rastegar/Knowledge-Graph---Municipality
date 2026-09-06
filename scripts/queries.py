@@ -1,4 +1,3 @@
-"""Sample KG queries + counts. Run: python -m scripts.queries"""
 import os
 from dotenv import load_dotenv
 from neo4j import GraphDatabase

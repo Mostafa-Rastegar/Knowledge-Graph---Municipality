@@ -1,7 +1,3 @@
-"""Offline self-check for ontology enforcement (no LLM, no DB needed).
-
-Run: python -m tests.test_extract
-"""
 import json
 import subprocess
 import sys
@@ -24,7 +20,6 @@ def test_drops_unknown_entity_type():
 
 
 def test_drops_disallowed_relation():
-    # Project -EXECUTOR_OF-> Contractor is not in ALLOWED_RELATIONS
     content = '{"triplets":[{"subject":{"type":"Project","name":"x"},"predicate":"EXECUTOR_OF","object":{"type":"Contractor","name":"y"},"evidence":"z"}]}'
     assert parse_triplets(content) == []
 
@@ -45,7 +40,7 @@ def test_fact_id_stable_and_key_format():
         object=Entity(type="Project", name="پل صدر"),
         evidence="...",
     )
-    # whitespace-collapsed, deterministic
+
     assert entity_key(t.subject) == "Budget:ردیف ۱۴۰۳"
     assert fact_id("chunk_x", t) == fact_id("chunk_x", t)
     assert fact_id("chunk_x", t) != fact_id("chunk_y", t)
@@ -66,13 +61,6 @@ def _record(chunk_id: str, text: str, name: str) -> dict:
 
 
 def test_resume_keeps_the_work_of_a_run_that_died():
-    """A stopped run must not lose finished chunks.
-
-    The extractor writes to a .part file and moves it into place at the end. A
-    later run reads both the output file and the .part file, so the work of
-    every attempt adds up. The api key here is invalid on purpose: a cache miss
-    would try to call the model and the run would fail.
-    """
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp)
         chunks = work / "chunks.jsonl"
@@ -86,10 +74,10 @@ def test_resume_keeps_the_work_of_a_run_that_died():
             encoding="utf-8",
         )
         out = work / "triplets.jsonl"
-        # The output of an early run holds one chunk.
+
         out.write_text(json.dumps(_record("doc_0_c0", texts["doc_0_c0"], "alpha"),
                                   ensure_ascii=False) + "\n", encoding="utf-8")
-        # A later run died, so its progress sits in the .part file.
+
         part = out.with_suffix(out.suffix + ".part")
         part.write_text(
             "\n".join(

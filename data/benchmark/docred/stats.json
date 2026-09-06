@@ -1,0 +1,66 @@
+{
+  "validation": {
+    "documents": 998,
+    "entities": 19528,
+    "mentions": 26141,
+    "facts": 12275,
+    "words": 200077,
+    "relations": 96,
+    "entity_types": [
+      "LOC",
+      "MISC",
+      "NUM",
+      "ORG",
+      "PER",
+      "TIME"
+    ]
+  },
+  "test": {
+    "documents": 1000,
+    "entities": 19539,
+    "mentions": 26704,
+    "facts": 0,
+    "words": 197787,
+    "relations": 0,
+    "entity_types": [
+      "LOC",
+      "MISC",
+      "NUM",
+      "ORG",
+      "PER",
+      "TIME"
+    ]
+  },
+  "train_annotated": {
+    "documents": 3053,
+    "entities": 59493,
+    "mentions": 79481,
+    "facts": 38180,
+    "words": 603468,
+    "relations": 96,
+    "entity_types": [
+      "LOC",
+      "MISC",
+      "NUM",
+      "ORG",
+      "PER",
+      "TIME"
+    ]
+  },
+  "train_distant": {
+    "documents": 101873,
+    "entities": 1965484,
+    "mentions": 2558350,
+    "facts": 1505638,
+    "words": 20328858,
+    "relations": 96,
+    "entity_types": [
+      "LOC",
+      "MISC",
+      "NUM",
+      "ORG",
+      "PER",
+      "TIME"
+    ]
+  }
+}

@@ -19,6 +19,7 @@
   .btn{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit;font-size:14px}
   .btn:disabled{opacity:.5;cursor:default}
   #status{font-size:13px;color:var(--muted)}
+  .q{background:#12151d;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;width:240px}
   main{flex:1;display:flex;min-height:0}
   #net{flex:1;min-width:0}
   aside{width:320px;background:var(--panel);border-inline-start:1px solid var(--border);padding:14px;overflow:auto}
@@ -39,7 +40,10 @@
     <input type="file" id="file" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display:none">
     <button class="btn" id="pick">افزودن سند</button>
     <button class="btn" id="refresh" style="background:#374151">تازه‌سازی</button>
+    <input id="q" class="q" placeholder="جستجوی موجودیت… (مثلاً Tehran)">
+    <button class="btn" id="go" style="background:#374151">جستجو</button>
     <span id="status"></span>
+    <span id="db" class="hint"></span>
   </div>
 </header>
 <main>
@@ -69,11 +73,15 @@ function drawLegend(){
 
 async function load(){
   $('#status').textContent = 'در حال بارگذاری گراف…';
-  // ?doc=<id> in the page address shows one document's graph. The database
-  // holds two graphs, so the whole graph at once is unreadable.
-  const doc = new URLSearchParams(location.search).get('doc') || '';
-  const r = await fetch('/api/graph' + (doc ? '?doc=' + encodeURIComponent(doc) : ''));
+  const params = new URLSearchParams(location.search);
+  const doc = params.get('doc') || '';
+  const q = $('#q').value.trim() || params.get('q') || '';
+  const qs = doc ? '?doc=' + encodeURIComponent(doc) : (q ? '?q=' + encodeURIComponent(q) : '');
+  const r = await fetch('/api/graph' + qs);
   DATA = await r.json();
+  fetch('/api/stats').then(x=>x.json()).then(s=>{
+    $('#db').textContent = `پایگاه: ${s.entities.toLocaleString('fa-IR')} موجودیت · ${s.facts.toLocaleString('fa-IR')} رابطه · ${s.evidence.toLocaleString('fa-IR')} شاهد`;
+  }).catch(()=>{});
   nodesDS = new vis.DataSet(DATA.nodes.map(n=>({
     id:n.id, label:n.label, group:n.group,
     color:{background:COLOR[n.group],border:'#0008',highlight:{background:COLOR[n.group],border:'#fff'}},
@@ -115,6 +123,8 @@ function clearPanel(){
 
 $('#pick').onclick = ()=> $('#file').click();
 $('#refresh').onclick = load;
+$('#go').onclick = load;
+$('#q').onkeydown = e => { if(e.key === 'Enter') load(); };
 $('#file').onchange = async e=>{
   const f = e.target.files[0]; if(!f) return;
   $('#pick').disabled = true;
