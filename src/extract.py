@@ -102,6 +102,13 @@ def load_ontology(path: Path) -> None:
 COMPACT = False
 
 
+def density_hint() -> str:
+    hint = os.environ.get("LLM_DENSITY_HINT", "20 to 40").strip()
+    if hint.lower() in ("", "none", "off"):
+        return ""
+    return f" A document normally holds {hint} relations."
+
+
 def load_compact_ontology(path: Path) -> None:
     global ENTITY_TYPES, ALLOWED_RELATIONS, SYSTEM_PROMPT, COMPACT
     load_ontology(path)
@@ -115,7 +122,7 @@ def load_compact_ontology(path: Path) -> None:
         f"Allowed relations (use the exact name):\n{relations}\n\n"
         "Rules:\n"
         "- Be exhaustive. Check every pair of entities, not only the pairs that\n"
-        "  appear in the same sentence. A document normally holds 20 to 40 relations.\n"
+        f"  appear in the same sentence.{density_hint()}\n"
         "- Return a relation when the document states it, and also when the document\n"
         "  makes it certain. Example: a place is in a city, the city is in a country,\n"
         "  so the place is in that country too.\n"
