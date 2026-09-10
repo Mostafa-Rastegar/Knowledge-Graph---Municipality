@@ -35,3 +35,6 @@ data/benchmark/docred/*
 !data/benchmark/docred/*.usage.json
 !data/benchmark/eval_report_test.json
 !data/benchmark/*.usage.json
+
+# Handoff prompt for a fresh session
+HANDOFF.md
