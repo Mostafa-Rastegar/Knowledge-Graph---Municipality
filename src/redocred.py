@@ -95,6 +95,11 @@ def cmd_prepare(args: argparse.Namespace) -> None:
                         "document_id": doc_id,
                         "source_path": str(BENCH / "data" / f"{args.split}_revised.json"),
                         "text": f"Document:\n{doc_text(doc)}\n\nEntities:\n{entity_block(doc)}",
+                        "sents": [" ".join(sent) for sent in doc["sents"]],
+                        "entities": [
+                            {"idx": j, "type": e[0]["type"], "forms": sorted({m["name"] for m in e})}
+                            for j, e in enumerate(doc["vertexSet"])
+                        ],
                     },
                     ensure_ascii=False,
                 )

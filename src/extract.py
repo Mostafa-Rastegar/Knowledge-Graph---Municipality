@@ -21,7 +21,7 @@ from pydantic import BaseModel, ValidationError, field_validator
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 log = structlog.get_logger()
-load_dotenv(override=True)
+load_dotenv()
 
 ENTITY_TYPES = {"Project", "Contractor", "Location", "Official", "Budget", "Complaint"}
 
@@ -99,6 +99,87 @@ def load_ontology(path: Path) -> None:
     )
 
 
+COMPACT = False
+
+
+def load_compact_ontology(path: Path) -> None:
+    global ENTITY_TYPES, ALLOWED_RELATIONS, SYSTEM_PROMPT, COMPACT
+    load_ontology(path)
+    COMPACT = True
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    relations = "\n".join(f"- {name}" for name in sorted(set(spec["relations"].values())))
+    SYSTEM_PROMPT = (
+        "You are a document-level relation extraction system.\n"
+        "You get a document as numbered sentences and a numbered list of its entities.\n"
+        "Return every relation that the document states between two listed entities.\n\n"
+        f"Allowed relations (use the exact name):\n{relations}\n\n"
+        "Rules:\n"
+        "- Be exhaustive. Check every pair of entities, not only the pairs that\n"
+        "  appear in the same sentence. A document normally holds 20 to 40 relations.\n"
+        "- Return a relation when the document states it, and also when the document\n"
+        "  makes it certain. Example: a place is in a city, the city is in a country,\n"
+        "  so the place is in that country too.\n"
+        "- When the list holds a relation and its inverse, return both directions.\n"
+        "- Name each entity by its number from the list. Never write entity names.\n"
+        "- Give the numbers of the sentences that prove the relation.\n"
+        "- Ignore any relation that is not in the list.\n\n"
+        "Answer with JSON only, in this exact shape:\n"
+        '{"r":[[subject_number,"relation name",object_number,[sentence_numbers]]]}\n'
+        'If you find nothing: {"r":[]}'
+    )
+
+
+def compact_input(chunk: dict) -> str:
+    sents = "\n".join(f"{i}: {s}" for i, s in enumerate(chunk["sents"]))
+    ents = []
+    for ent in chunk["entities"]:
+        also = ent["forms"][1:]
+        line = f"{ent['idx']}: {ent['forms'][0]} [{ent['type']}]"
+        ents.append(line + (f" (also: {', '.join(also)})" if also else ""))
+    return f"Sentences:\n{sents}\n\nEntities:\n" + "\n".join(ents)
+
+
+def parse_compact(content: str, chunk: dict) -> list[Triplet]:
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        log.warning("llm_bad_json")
+        return []
+    entities = {e["idx"]: e for e in chunk["entities"]}
+    sents = chunk["sents"]
+    out: list[Triplet] = []
+    for row in data.get("r", []):
+        if not isinstance(row, list) or len(row) < 3:
+            continue
+        head, predicate, tail = row[0], row[1], row[2]
+        evidence_ids = row[3] if len(row) > 3 and isinstance(row[3], list) else []
+        if head not in entities or tail not in entities:
+            log.warning("rejected_unknown_entity_number", head=head, tail=tail)
+            continue
+        text = " ".join(sents[i] for i in evidence_ids if isinstance(i, int) and 0 <= i < len(sents))
+        if not text:
+            text = " ".join(sents)
+        item = {
+            "subject": {"type": entities[head]["type"], "name": entities[head]["forms"][0]},
+            "predicate": predicate if isinstance(predicate, str) else "",
+            "object": {"type": entities[tail]["type"], "name": entities[tail]["forms"][0]},
+            "evidence": text[:600],
+        }
+        try:
+            triplet = Triplet.model_validate(item)
+        except ValidationError as exc:
+            log.warning("rejected_invalid_triplet", error=str(exc.errors()[:1]))
+            continue
+        if not triplet.is_allowed():
+            log.warning(
+                "rejected_outside_ontology",
+                relation=(triplet.subject.type, triplet.predicate, triplet.object.type),
+            )
+            continue
+        out.append(triplet)
+    return out
+
+
 def load_fewshot(path: Path) -> None:
     global SYSTEM_PROMPT
     examples = json.loads(path.read_text(encoding="utf-8"))
@@ -168,14 +249,26 @@ def fact_id(chunk_id: str, triplet: Triplet) -> str:
 
 
 def client_from_env() -> OpenAI:
-    api_key = os.environ.get("LLM_API_KEY", "").strip()
-    base_url = os.environ.get("LLM_BASE_URL", "").strip()
-    if not api_key:
-        raise SystemExit("LLM_API_KEY is empty. Put the key in .env (never hardcode it).")
-    if not base_url:
-        raise SystemExit("LLM_BASE_URL is empty. Set it in .env.")
+    if os.environ.get("LLM_PROVIDER", "").strip().lower() == "mistral":
+        api_key = os.environ.get("MISTRAL_API_KEY", "").strip()
+        base_url = os.environ.get("MISTRAL_BASE_URL", "https://api.mistral.ai/v1").strip()
+        if not api_key:
+            raise SystemExit("MISTRAL_API_KEY is empty. Put the key in .env (never hardcode it).")
+    else:
+        api_key = os.environ.get("LLM_API_KEY", "").strip()
+        base_url = os.environ.get("LLM_BASE_URL", "").strip()
+        if not api_key:
+            raise SystemExit("LLM_API_KEY is empty. Put the key in .env (never hardcode it).")
+        if not base_url:
+            raise SystemExit("LLM_BASE_URL is empty. Set it in .env.")
     timeout = float(os.environ.get("LLM_TIMEOUT", "180"))
-    return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
+    return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
+
+
+def model_name() -> str:
+    if os.environ.get("LLM_PROVIDER", "").strip().lower() == "mistral":
+        return os.environ.get("MISTRAL_MODEL", "ministral-14b-latest")
+    return os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini")
 
 
 USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "cached_tokens": 0, "calls": 0}
@@ -284,7 +377,7 @@ def call_llm(client: Optional[OpenAI], text: str) -> str:
     if PROVIDER == "claude-cli":
         return call_claude_cli(text)
     resp = client.chat.completions.create(
-        model=os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini"),
+        model=model_name(),
         temperature=float(os.environ.get("LLM_TEMPERATURE", "0")),
         max_tokens=int(os.environ.get("LLM_MAX_TOKENS", "2000")),
         response_format={"type": "json_object"},
@@ -321,11 +414,16 @@ def parse_triplets(content: str) -> list[Triplet]:
 
 
 def chunk_sha(text: str) -> str:
-    return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
+    mode = "compact|" if COMPACT else ""
+    return hashlib.sha1((mode + text).encode("utf-8")).hexdigest()[:12]
 
 
 def extract_chunk(client: OpenAI, chunk: dict) -> list[dict]:
-    triplets = parse_triplets(call_llm(client, chunk["text"]))
+    if COMPACT:
+        answer = call_llm(client, compact_input(chunk))
+        triplets = parse_compact(answer, chunk)
+    else:
+        triplets = parse_triplets(call_llm(client, chunk["text"]))
     sha = chunk_sha(chunk["text"])
     records = []
     for triplet in triplets:
@@ -383,12 +481,14 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="re-extract even cached chunks")
     parser.add_argument("--ontology", help="JSON ontology file; default is the municipality one")
     parser.add_argument("--fewshot", help="JSON file with worked examples for the prompt")
+    parser.add_argument("--compact", action="store_true",
+                        help="answer with entity and sentence numbers instead of names and quotes")
     parser.add_argument("--workers", type=int, default=int(os.environ.get("LLM_WORKERS", "1")))
     parser.add_argument("--limit", type=int, default=0, help="stop after this many chunks")
     args = parser.parse_args()
 
     if args.ontology:
-        load_ontology(Path(args.ontology))
+        (load_compact_ontology if args.compact else load_ontology)(Path(args.ontology))
         log.info("ontology_loaded", path=args.ontology, entity_types=len(ENTITY_TYPES),
                  allowed_relations=len(ALLOWED_RELATIONS))
     if args.fewshot:
@@ -442,7 +542,8 @@ def main() -> None:
         client: Optional[OpenAI] = client_from_env() if todo and PROVIDER != "claude-cli" else None
         if todo:
             log.info("provider", provider=PROVIDER,
-                     model=os.environ.get("CLAUDE_MODEL", "sonnet") if PROVIDER == "claude-cli" else os.environ.get("LLM_MODEL", ""))
+                     model=os.environ.get("CLAUDE_MODEL", "sonnet") if PROVIDER == "claude-cli" else model_name(),
+                     compact=COMPACT)
 
         def work(chunk: dict):
             try:

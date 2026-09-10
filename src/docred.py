@@ -50,19 +50,22 @@ def cmd_prepare(args: argparse.Namespace) -> None:
                 if args.limit and i >= args.limit:
                     break
                 doc_id = f"docred_{split}_{i:06d}"
+                entities = [
+                    {"idx": j, "type": e[0]["type"], "forms": sorted({m["name"] for m in e})}
+                    for j, e in enumerate(doc["vertexSet"])
+                ]
                 ch.write(json.dumps({
                     "chunk_id": f"{doc_id}_c0",
                     "document_id": doc_id,
                     "source_path": str(DOCRED / f"{split}.parquet"),
                     "text": f"Document:\n{doc_text(doc)}\n\nEntities:\n{entity_block(doc)}",
+                    "sents": [" ".join(sent) for sent in doc["sents"]],
+                    "entities": entities,
                 }, ensure_ascii=False) + "\n")
                 gd.write(json.dumps({
                     "document_id": doc_id,
                     "title": doc["title"],
-                    "entities": [
-                        {"idx": j, "type": e[0]["type"], "forms": sorted({m["name"] for m in e})}
-                        for j, e in enumerate(doc["vertexSet"])
-                    ],
+                    "entities": entities,
                     "triples": [
                         {"h": l["h"], "t": l["t"], "r": l["r"], "r_name": l["r_name"]} for l in doc["labels"]
                     ],
