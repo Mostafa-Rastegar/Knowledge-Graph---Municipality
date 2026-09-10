@@ -258,27 +258,29 @@ def fact_id(chunk_id: str, triplet: Triplet) -> str:
     return "fact_" + hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
 
 
+DEFAULT_BASE_URL = {"mistral": "https://api.mistral.ai/v1"}
+
+
+def _prefix() -> str:
+    provider = os.environ.get("LLM_PROVIDER", "").strip().lower()
+    return provider.upper() if provider and provider != "openai" else "LLM"
+
+
 def client_from_env() -> OpenAI:
-    if os.environ.get("LLM_PROVIDER", "").strip().lower() == "mistral":
-        api_key = os.environ.get("MISTRAL_API_KEY", "").strip()
-        base_url = os.environ.get("MISTRAL_BASE_URL", "https://api.mistral.ai/v1").strip()
-        if not api_key:
-            raise SystemExit("MISTRAL_API_KEY is empty. Put the key in .env (never hardcode it).")
-    else:
-        api_key = os.environ.get("LLM_API_KEY", "").strip()
-        base_url = os.environ.get("LLM_BASE_URL", "").strip()
-        if not api_key:
-            raise SystemExit("LLM_API_KEY is empty. Put the key in .env (never hardcode it).")
-        if not base_url:
-            raise SystemExit("LLM_BASE_URL is empty. Set it in .env.")
+    prefix = _prefix()
+    api_key = os.environ.get(f"{prefix}_API_KEY", "").strip()
+    base_url = os.environ.get(f"{prefix}_BASE_URL", "").strip() or DEFAULT_BASE_URL.get(prefix.lower(), "")
+    if not api_key:
+        raise SystemExit(f"{prefix}_API_KEY is empty. Put the key in .env (never hardcode it).")
+    if not base_url:
+        raise SystemExit(f"{prefix}_BASE_URL is empty. Set it in .env.")
     timeout = float(os.environ.get("LLM_TIMEOUT", "180"))
     return OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
 
 
 def model_name() -> str:
-    if os.environ.get("LLM_PROVIDER", "").strip().lower() == "mistral":
-        return os.environ.get("MISTRAL_MODEL", "ministral-14b-latest")
-    return os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini")
+    prefix = _prefix()
+    return os.environ.get(f"{prefix}_MODEL", "").strip() or os.environ.get("LLM_MODEL", "openai/gpt-4.1-mini")
 
 
 USAGE = {"prompt_tokens": 0, "completion_tokens": 0, "cached_tokens": 0, "calls": 0}
