@@ -153,6 +153,9 @@ def parse_compact(content: str, chunk: dict) -> list[Triplet]:
             continue
         head, predicate, tail = row[0], row[1], row[2]
         evidence_ids = row[3] if len(row) > 3 and isinstance(row[3], list) else []
+        if not isinstance(head, int) or not isinstance(tail, int):
+            log.warning("rejected_non_integer_entity", head=str(head)[:40], tail=str(tail)[:40])
+            continue
         if head not in entities or tail not in entities:
             log.warning("rejected_unknown_entity_number", head=head, tail=tail)
             continue
