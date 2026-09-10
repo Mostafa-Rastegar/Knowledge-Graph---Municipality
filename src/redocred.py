@@ -143,6 +143,26 @@ def cmd_fewshot(args: argparse.Namespace) -> None:
     )
     examples = []
     for doc in ranked[: args.n]:
+        if args.compact:
+            sents = [" ".join(sent) for sent in doc["sents"]]
+            ents = []
+            for j, e in enumerate(doc["vertexSet"]):
+                forms = sorted({m["name"] for m in e})
+                also = f" (also: {', '.join(forms[1:])})" if len(forms) > 1 else ""
+                ents.append(f"{j}: {forms[0]} [{e[0]['type']}]{also}")
+            sent_block = "\n".join(f"{i}: {text}" for i, text in enumerate(sents))
+            examples.append(
+                {
+                    "input": f"Sentences:\n{sent_block}\n\nEntities:\n" + "\n".join(ents),
+                    "output": {
+                        "r": [
+                            [l["h"], names[l["r"]], l["t"], l.get("evidence") or [0]]
+                            for l in doc["labels"]
+                        ]
+                    },
+                }
+            )
+            continue
         examples.append(
             {
                 "input": f"Document:\n{doc_text(doc)}\n\nEntities:\n{entity_block(doc)}",
@@ -171,7 +191,8 @@ def cmd_fewshot(args: argparse.Namespace) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(examples, ensure_ascii=False, indent=2), encoding="utf-8")
     for ex in examples:
-        print(f"example words={len(ex['input'].split())} triplets={len(ex['output']['triplets'])}")
+        rows = ex["output"].get("triplets") or ex["output"].get("r") or []
+        print(f"example words={len(ex['input'].split())} triplets={len(rows)}")
     print(f"wrote {path}")
 
 
@@ -444,6 +465,7 @@ def main() -> None:
     fs = sub.add_parser("fewshot", help="build prompt examples from the train split")
     fs.add_argument("--n", type=int, default=2)
     fs.add_argument("--out", default="configs/fewshot_redocred.json")
+    fs.add_argument("--compact", action="store_true")
     fs.set_defaults(func=cmd_fewshot)
 
     gr = sub.add_parser("graph", help="print one document's graph as Mermaid")
