@@ -1,0 +1,101 @@
+\chapter{بازتولید نتیجه}
+\label{app:repro}
+
+\section{اجرای بنچمارک}
+\label{sec:app-bench}
+
+هر عددی که در این گزارش آمده با دنباله زیر بازتولید می‌شود. مرحله آماده‌سازی، هستان‌شناسی را هم از بخش \lr{Train} می‌سازد.
+
+\begin{latin}
+\begin{verbatim}
+python -m src.redocred prepare --split dev --limit 50
+python -m src.redocred fewshot --n 2
+
+python -m src.extract data/benchmark/chunks_dev.jsonl \
+    --out data/benchmark/triplets_dev_v2.jsonl \
+    --ontology configs/ontology_redocred.json
+
+python -m src.extract data/benchmark/chunks_dev.jsonl \
+    --out data/benchmark/triplets_dev_v4.jsonl \
+    --ontology configs/ontology_redocred.json \
+    --fewshot configs/fewshot_redocred.json
+
+python -m src.redocred closure data/benchmark/_union.jsonl \
+    --out data/benchmark/triplets_dev_v6.jsonl
+
+python -m src.redocred eval data/benchmark/triplets_dev_v6.jsonl \
+    --gold data/benchmark/gold_dev50.jsonl \
+    --report data/benchmark/eval_report_v6.json
+\end{verbatim}
+\end{latin}
+
+\section{اجرای پیکره کامل}
+\label{sec:app-full}
+
+\begin{latin}
+\begin{verbatim}
+python -m src.docred prepare
+python -m src.docred stats
+
+python -m src.extract data/benchmark/docred/chunks_validation.jsonl \
+    --out data/benchmark/docred/triplets_validation_a.jsonl \
+    --ontology configs/ontology_redocred.json --compact --workers 16
+
+python -m src.redocred consensus <pass A> <pass B> --out <agreed>
+python -m src.redocred closure  <agreed>  --out <final>
+
+python -m src.load_neo4j data/benchmark/docred/triplets_validation.jsonl \
+    --ontology configs/ontology_redocred.json
+\end{verbatim}
+\end{latin}
+
+هر دو گذر ازسرگیری‌پذیرند. اگر اجرا نیمه‌کاره بماند، همان فرمان کار را از همان‌جا ادامه می‌دهد، چون خروجی در یک فایل کناری نوشته می‌شود و اجرای بعدی آن را هم می‌خواند.
+
+\section{تست‌های آفلاین}
+\label{sec:app-tests}
+
+دوازده تست بدون شبکه و بدون فراخوانی مدل زبانی اجرا می‌شوند:
+
+\begin{latin}
+\begin{verbatim}
+python -m tests.test_extract
+python -m tests.test_redocred
+\end{verbatim}
+\end{latin}
+
+خروجی هر دو باید \lr{all passed} باشد.
+
+\chapter{فایل‌های تولیدشده}
+\label{app:files}
+
+\begin{table}[ht]
+\centering
+\caption{فایل‌های اصلی سامانه و کاری که هر کدام انجام می‌دهند.}
+\label{tab:files}
+\begin{adjustbox}{max width=\textwidth}
+\small
+\begin{tabular}{|p{5cm}|p{8.8cm}|}
+\hline
+\rg فایل & \rg محتوا \\
+\hline
+\rg \lr{src/ingest.py} & \rg ورود سند، رونویسی تصویر، نرمال‌سازی، قطعه‌بندی \\
+\hline
+\rg \lr{src/extract.py} & \rg استخراج با مدل زبانی، اعتبارسنجی، فیلتر هستان‌شناسی، قالب فشرده \\
+\hline
+\rg \lr{src/redocred.py} & \rg آماده‌سازی بنچمارک، ساخت مثال، اجماع، بستار، ارزیاب \\
+\hline
+\rg \lr{src/docred.py} & \rg خواندن چهار بخش \lr{Parquet} پیکره \lr{DocRED} و ساخت داده و آمار \\
+\hline
+\rg \lr{src/load\_neo4j.py} & \rg بارگذاری تکرارپذیر در \lr{Neo4j} \\
+\hline
+\rg \lr{src/app.py} & \rg رابط وب نمایش و جست‌وجوی گراف \\
+\hline
+\rg \lr{configs/ontology\_redocred.json} & \rg $96$ رابطه و $654$ ترکیب مجاز \\
+\hline
+\rg \lr{configs/fewshot\_redocred.json} & \rg مثال‌های پرامپت، برگرفته از بخش \lr{Train} \\
+\hline
+\rg \lr{data/benchmark/docred/claude/} & \rg خروجی و گزارش عددی هر بخش در مرحله سوم \\
+\hline
+\end{tabular}
+\end{adjustbox}
+\end{table}

@@ -1,0 +1,25 @@
+%کلمات کلیدی انگلیسی
+\latinkeywords{knowledge graph, document-level relation extraction, large language models, constrained ontology, hallucination control, DocRED}
+%چکیده انگلیسی
+
+\en-abstract{
+Most of what an organisation knows sits in free text, where no query can reach it. This work builds a system that extracts (entity, relation, entity) triples from unstructured text and loads them into a queryable knowledge graph. Three decisions separate it from a plain call to a language model: a constrained ontology that rejects every triple whose (subject type, relation, object type) combination is not allowed, a mandatory evidence rule that ties each edge to the sentence it came from, and a pipeline that never duplicates data when it runs again.
+\\
+The system was evaluated on the Re-DocRED benchmark. Over six iterations $F_1$ rose from 16.88 to 29.66, against a published GPT-3.5 baseline of 9.74 on the same data. The same configuration then scored 28.64 on all 500 documents of the dev split. Stage three moved to the full DocRED corpus, 106,924 documents and 1.56 million labelled triples, which forced a rewrite for scale: concurrent extraction, resumption without repeated work, a streaming evaluator and a batched Neo4j loader.
+\\
+Changing the language model, compacting the answer format and taking the intersection of two passes instead of their union raised $F_1$ to 36.25 on the 998 dev documents and to 36.33 on the 3,053 annotated train documents, which played no part in prompt tuning. A fixed prediction set scored against two label sets on the same 498 documents gives precision 40.20 with the original labels and 66.42 with the revised ones, which measures the false negative problem in DocRED directly. The final graph, built from 16,536 documents, holds 111,912 entities, 253,007 relations and 278,632 evidence nodes. The same system, with no architectural change, then ran on Persian municipal documents: only one ontology file was different.
+}
+%%%%%%%%%%%%%%%%%%%%% کدهای زیر را تغییر ندهید.
+
+\newpage
+\thispagestyle{empty}
+\begin{latin}
+\section*{\LARGE\centering Abstract}
+
+\een-abstract
+
+\vspace*{.5cm}
+{\large\textbf{Key Words:}}\par
+\vspace*{.5cm}
+\elatinkeywords
+\end{latin}
