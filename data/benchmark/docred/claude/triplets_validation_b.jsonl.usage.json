@@ -1,0 +1,11 @@
+{
+  "prompt_tokens": 5297247,
+  "completion_tokens": 302535,
+  "cached_tokens": 3598630,
+  "calls": 1010,
+  "seconds": 889.8,
+  "chunks_extracted": 1010,
+  "model": "sonnet",
+  "workers": 16,
+  "provider": "claude-cli"
+}

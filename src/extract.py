@@ -569,7 +569,11 @@ def main() -> None:
                 chunk, records, err = fut.result()
                 if err is not None:
                     chunks_failed += 1
-                    log.error("chunk_failed", chunk_id=chunk["chunk_id"], error=str(err))
+                    cause = err
+                    last = getattr(err, "last_attempt", None)
+                    if last is not None and last.exception() is not None:
+                        cause = last.exception()
+                    log.error("chunk_failed", chunk_id=chunk["chunk_id"], error=str(cause)[:300])
                 else:
                     chunks_done += 1
                     facts += write(fh, records)
@@ -590,7 +594,8 @@ def main() -> None:
     if USAGE["calls"]:
         out_path.with_suffix(out_path.suffix + ".usage.json").write_text(
             json.dumps({**USAGE, "seconds": elapsed, "chunks_extracted": USAGE["calls"],
-                        "model": os.environ.get("LLM_MODEL", ""), "workers": args.workers}, indent=2),
+                        "model": os.environ.get("CLAUDE_MODEL", "sonnet") if PROVIDER == "claude-cli" else model_name(),
+                        "provider": PROVIDER, "workers": args.workers}, indent=2),
             encoding="utf-8",
         )
     if chunks_failed:

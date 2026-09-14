@@ -196,6 +196,27 @@ def cmd_fewshot(args: argparse.Namespace) -> None:
     print(f"wrote {path}")
 
 
+def cmd_consensus(args: argparse.Namespace) -> None:
+    keep = set()
+    with open(args.a, encoding="utf-8") as fh:
+        for line in fh:
+            if line.strip():
+                keep.add(json.loads(line)["fact_id"])
+    kept = total = 0
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(args.b, encoding="utf-8") as fh, out_path.open("w", encoding="utf-8") as out:
+        for line in fh:
+            if not line.strip():
+                continue
+            total += 1
+            if json.loads(line)["fact_id"] in keep:
+                out.write(line)
+                kept += 1
+    print(f"pass A facts {len(keep)}, pass B facts {total}, agreed {kept}")
+    print(f"out: {out_path}")
+
+
 def cmd_graph(args: argparse.Namespace) -> None:
     rows = [
         json.loads(line)
@@ -467,6 +488,12 @@ def main() -> None:
     fs.add_argument("--out", default="configs/fewshot_redocred.json")
     fs.add_argument("--compact", action="store_true")
     fs.set_defaults(func=cmd_fewshot)
+
+    cs = sub.add_parser("consensus", help="keep the facts that both passes found")
+    cs.add_argument("a")
+    cs.add_argument("b")
+    cs.add_argument("--out", required=True)
+    cs.set_defaults(func=cmd_consensus)
 
     gr = sub.add_parser("graph", help="print one document's graph as Mermaid")
     gr.add_argument("pred")

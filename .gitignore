@@ -38,3 +38,7 @@ data/benchmark/docred/*
 
 # Handoff prompt for a fresh session
 HANDOFF.md
+!data/benchmark/docred/claude/
+data/benchmark/docred/claude/*
+!data/benchmark/docred/claude/eval_report_*.json
+!data/benchmark/docred/claude/*.usage.json

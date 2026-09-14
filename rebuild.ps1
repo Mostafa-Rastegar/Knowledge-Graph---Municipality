@@ -15,10 +15,10 @@ $env:PYTHONUTF8 = "1"
 function Step($text) { Write-Host "`n=== $text ===" -ForegroundColor Cyan }
 
 function Consensus($a, $b, $out) {
-    $union = "$out.union"
-    Get-Content $a, $b | Set-Content -Encoding utf8 $union
-    python -m src.redocred closure $union --out $out
-    Remove-Item $union
+    $agreed = "$out.agreed"
+    python -m src.redocred consensus $a $b --out $agreed
+    python -m src.redocred closure $agreed --out $out
+    Remove-Item $agreed
 }
 
 if ($DocRED) {
